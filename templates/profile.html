@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+</head>
+<body>
+  <div class="sidebar">
+    <ul>
+      <li><a href="{% url 'dashboard' %}">Home</a></li>
+      <li><a href="#">Profile</a></li>
+      <li><a href="{% url 'settings' %}">Settings</a></li>
+    </ul>
+    <form action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+  <div class="content">
+    <header>
+      <h1>Profile Information</h1>
+    </header>
+    <div class="userinfo">
+      <table border="1">
+        <tr><th>ID</th><td>{{ user.id }}</td></tr>
+        <tr><th>Username</th><td>{{ user.username }}</td></tr>
+        <tr><th>Email</th><td>{{ user.email }}</td></tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

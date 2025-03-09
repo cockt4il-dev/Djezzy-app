@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<style>
+
+.canv{
+    min-height: 50vh;
+    
+}
+
+#chLine{
+    margin-top: auto;
+
+}
+
+
+
+</style>
+
+<div class="main-content ">
+
+    <!-- <div class="container-fluid py-4 min-vh-100"> -->
+    <div class="container">
+
+        <!-- Row 1 -->
+        <div class="row g-3">
+          <!-- Conversions -->
+          <div class="col-md-3 canv">
+            <div class="card h-100 p-3">
+              <h6>Conversions</h6>
+              <h2>2,094</h2>
+              <p class="text-success">▲ 356</p>
+              <p>by platform</p>
+              <div class="d-flex justify-content-between">
+                <span>Web</span><span>1,198</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>App</span><span>896</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- 28 day trend -->
+          <div class="col-md-6">
+            <div class="card h-100 p-3">
+              <h2>28 day trend</h2>
+              <!-- Placeholder for chart -->
+              <canvas id="chLine" ></canvas>
+            </div>
+          </div>
+      
+          <!-- Conversion by event type -->
+          <div class="col-md-3">
+            <div class="card h-100 p-3">
+              <h6>Conversion by event type</h6>
+              <!-- Placeholder for chart -->
+              <div class="chart-placeholder" style="height:200px; background-color: #f1f1f1;"></div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Row 2 -->
+        <div class="row g-3 mt-1">
+          <!-- Users -->
+          <div class="col-md-3">
+            <div class="card h-100 p-3">
+              <h6>Total responses</h6>
+              <h2>{{total_responses}}</h2>
+              <p class="text-success">▲ 22.6k</p>
+              <p>by platform</p>
+              <div class="d-flex justify-content-between">
+                <span>Web</span><span>122.2k</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>App</span><span>77.7k</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- 28 day trend -->
+          <div class="col-md-6">
+            <div class="card h-100 p-3">
+              <h6>28 day trend</h6>
+              <!-- Placeholder for chart -->
+              <div class="chart-placeholder" style="height:200px; background-color: #f1f1f1;"></div>
+            </div>
+          </div>
+      
+          <!-- Conversion rate and Engagement rate -->
+          <div class="col-md-3">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="card p-3">
+                  <h6>Conversion rate</h6>
+                  <p>Web: <strong>0.98%</strong></p>
+                  <p>App: <strong>1.15%</strong></p>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="card p-3">
+                  <h6>Engagement rate</h6>
+                  <p>Web: <strong>50.74%</strong></p>
+                  <p>App: <strong>55.1%</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+        </div>
+      
+        <!-- Footer -->
+        <div class="text-muted mt-4 text-end">
+          Web analytics: past 28 days GA4 — <small>18:11</small>
+        </div>
+      
+      </div>
+    
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(() => {
+        var chLine = document.getElementById("chLine");
+        if (!chLine) return;
+
+        var ctx = chLine.getContext('2d');
+
+        var gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(232, 77, 91, 1)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        var chartData = {
+            labels: ["S", "M", "T", "W", "T", "F", "S"],
+            datasets: [{
+                data: [589, 445, 483, 503, 689, 692, 634],
+                backgroundColor: gradient,
+                fill: true,
+                borderColor: '#E84D5B',
+                borderWidth: 2,
+                pointBackgroundColor: '#E84D5B',
+                pointBorderWidth: 0.5,
+                tension: 0.5
+            }]
+        };
+
+        new Chart(chLine, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { beginAtZero: false }
+                    },
+                    y: {
+                        grid: { display: true },
+                        border: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }, 50); // slight delay ensures all layout and styles settle
+});
+
+</script>
+
+
+
+
+
+</div>
+
+
+{% endblock %}

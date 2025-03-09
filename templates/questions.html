@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    #table {
+        
+    }
+
+    /* Responsive cards container */
+    .cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-bottom: 5px;
+        
+        
+    }
+
+    .card {
+    flex: 1; /* Makes all cards take equal width */
+    min-width: 225px; /* Ensures they don't shrink too much */
+    min-height: 175px;
+    text-align: center;
+    padding: 20px;
+    background-color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 10%;
+    /* New fix: Center text vertically */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 120px; /* Adjust height as needed */
+
+    transition: all 0.15s ease ;
+}
+
+
+    .card:hover{
+
+        transform: scale(1.05);
+        
+
+
+    }
+
+    /* Adjust cards layout on smaller screens */
+    @media (max-width: 768px) {
+        .cards-container {
+            flex-direction: column;
+        }
+    }
+
+
+    .main-content{
+        background-color: #F9F9F9;
+    }
+
+    h5{
+        font-weight: bold;
+        font-size:xx-large;
+    }
+
+
+    .input {
+
+  max-width: 300px;
+  background-color: #f5f5f5;
+  color: #242424;
+  padding: .15rem .5rem;
+  min-height: 40px;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+  
+  line-height: 2;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+input:focus {
+  border-bottom: 2px solid #EE171E;
+  border-radius: 4px 4px 2px 2px;
+}
+
+input:hover {
+  outline: 1px solid lightgrey;
+}
+
+.search-container{
+
+    display: flex;
+  justify-content: flex-end; /* Pushes the input to the right */
+  align-items: center; /* Aligns items vertically */
+  width: 100%;
+  padding: 10px; /* Adjust as needed */
+  padding-right: 0;
+  margin-top: 25%;
+
+
+}
+
+#show-more-btn{
+
+    border-radius: 8px;  
+    border: none;
+    min-height: 45px;
+    min-width: 45px;
+    background-color: #EE171E;
+    color: white;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+
+}
+
+#filter-btn{
+
+border-radius: 8px;  
+border: none;
+min-height: 40px;
+min-width: 45px;
+margin-right: 10px;
+background-color: #EE171E;
+color: white;
+box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+
+}
+
+#filterDropdown {
+    background-color: #EE171E;
+    border: none;
+}
+
+#apply-filter-btn{
+    background-color: #EE171E;
+    border: none;
+}
+
+#table thead th {
+            background-color: #F5F5F5; 
+            color: black; 
+            padding: 10px; 
+        }
+.progres-bar-striped{
+    background-color: red;
+}
+</style>
+
+<div class="main-content">
+    <div class="container">
+
+
+    
+    <div class="row my-3">
+        <div class="col">
+            <h4>Nps Questions</h4>
+        </div>
+    </div>
+    
+    
+    
+
+
+    <!-- Cards Section -->
+    <div class="cards-container">
+        <div class="card">
+            <h5>{{total_questions}}</h5>
+            <p><strong>Total questions</strong></p> <!-- You can dynamically load this number from the backend -->
+            <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar progres-bar-striped" style="width: 90%"></div>
+              </div>
+        </div>
+        <div class="card">
+            <h5>#</h5>
+            <p><strong>45</strong></p>
+        </div>
+        <div class="card">
+            <h5>#</h5>
+            <p><strong>5</strong></p>
+        </div>
+    </div>
+    <div class="search-container d-flex align-items-center gap-3">
+        <!-- Bootstrap Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Filter
+            </button>
+            <div class="dropdown-menu p-3" aria-labelledby="filterDropdown">
+                <!-- Lang_ID Dropdown -->
+                <label for="langSelect" class="form-label">Lang ID</label>
+                <select id="langSelect" class="form-select mb-2">
+                    <option value="">-- Select --</option>
+                    {% for lang in lang_ids %}
+                        <option value="{{ lang }}">{{ lang }}</option>
+                    {% endfor %}
+                </select>
+    
+                <!-- Question Type Dropdown -->
+                <label for="questionTypeSelect" class="form-label">Question Type</label>
+                <select id="questionTypeSelect" class="form-select">
+                    <option value="">-- Select --</option>
+                    {% for qst in question_types %}
+                        <option value="{{ qst }}">{{ qst }}</option>
+                    {% endfor %}
+                </select>
+    
+                <!-- Apply Button -->
+                <button class="btn btn-primary mt-3 w-100" id="apply-filter-btn">Apply</button>
+            </div>
+        </div>
+    
+        <!-- Search Input -->
+        <input placeholder="Search..." type="text" id="search-bar" name="text" class="input form-control" style="max-width: 220px;">
+    </div>
+    
+    <!-- Table Section -->
+    <table class="table table-bordered" id="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Survey Type</th>
+                <th scope="col">Lang ID</th>
+                <th scope="col">Question Number</th>
+                <th scope="col">Regexp Replace</th>
+                <th scope="col">Question Name</th>
+                <th scope="col">Question Type</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            {% for item in page_obj %}
+            <tr>
+                <th scope="row">{{ item.id }}</th>
+                <td>{{ item.survey_type_id }}</td>
+                <td class="lang-id">{{ item.lang_id }}</td>
+                <td>{{ item.question_number }}</td>
+                <td>{{ item.regexp_replace }}</td>
+                <td>{{ item.question_name }}</td>
+                <td class="question-type">{{ item.question_type }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button id="show-more-btn" data-page="2" class="btn btn-primary">Show All</button>
+
+    </div>
+    
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        // Show more functionality (unchanged)
+        $("#show-more-btn").click(function () {
+            let page = $(this).attr("data-page");  
+    
+            $.ajax({
+                url: window.location.pathname,  
+                type: "GET",
+                data: { page: page },
+                dataType: "json",
+                success: function (response) {
+                    if (response.data.length > 0) {
+                        response.data.forEach(item => {
+                            $("#table-body").append(
+                                `<tr>
+                                    <th scope="row">${ item.id }</th>
+                                    <td>${ item.survey_type_id }</td>
+                                    <td class="lang-id">${ item.lang_id.trim() }</td>  <!-- Added class for filtering -->
+                                    <td>${ item.question_number }</td>
+                                    <td>${ item.regexp_replace }</td>
+                                    <td>${ item.question_name }</td>
+                                    <td class="question-type">${ item.question_type.trim() }</td>  <!-- Added for filtering -->
+                                </tr>`
+                            );
+                        });
+    
+                        if (response.has_next) {
+                            $("#show-more-btn").attr("data-page", parseInt(page) + 1);
+                        } else {
+                            $("#show-more-btn").hide();  
+                        }
+                        applyFilter();
+                    }
+                }
+            });
+        });
+    
+        // Apply filter functionality
+       
+          
+      
+    });
+    </script>
+
+
+<script>
+
+function applyFilter() {
+    let selectedLang = $("#langSelect").val().trim();
+    let selectedQuestionType = $("#questionTypeSelect").val().trim();
+
+    $.ajax({
+        url: "/filtered-data/",  // Call the Django endpoint
+        type: "GET",
+        data: {
+            lang_id: selectedLang,
+            question_type: selectedQuestionType
+        },
+        dataType: "json",
+        success: function (response) {
+            $("#table-body").empty();  // Clear old table rows
+
+            response.data.forEach(item => {
+                $("#table-body").append(
+                    `<tr>
+                        <th scope="row">${ item.id }</th>
+                        <td>${ item.survey_type_id }</td>
+                        <td class="lang-id">${ item.lang_id }</td>
+                        <td>${ item.question_number }</td>
+                        <td>${ item.regexp_replace }</td>
+                        <td>${ item.question_name }</td>
+                        <td class="question-type">${ item.question_type }</td>
+                    </tr>`
+                );
+            });
+        }
+    });
+}
+
+$(document).ready(function () {
+    $("#apply-filter-btn").click(function () {
+        applyFilter();  // Call the filtering function
+    });
+});
+
+</script>
+
+<script>
+
+$(document).ready(function () {
+    $("#search-bar").on("keyup", function () {
+        let searchQuery = $(this).val().trim();  // Get the input value
+
+        $.ajax({
+            url: "/search-data/",  // Django endpoint for searching
+            type: "GET",
+            data: { query: searchQuery },  // Send the search query
+            dataType: "json",
+            success: function (response) {
+                $("#table-body").empty();  // Clear previous rows
+
+                response.data.forEach(item => {
+                    let highlightedText = highlightText(item.regexp_replace, searchQuery);
+
+                    $("#table-body").append(
+                        `<tr>
+                            <th scope="row">${ item.id }</th>
+                            <td>${ item.survey_type_id }</td>
+                            <td>${ item.lang_id }</td>
+                            <td>${ item.question_number }</td>
+                            <td class="regexp-replace">${ highlightedText }</td>
+                            <td>${ item.question_name }</td>
+                            <td>${ item.question_type }</td>
+                        </tr>`
+                    );
+                });
+            }
+        });
+    });
+});
+
+
+
+</script>
+
+<script>
+
+function highlightText(text, query) {
+    if (!query) return text; // Return original text if query is empty or null
+
+    // Escape HTML to prevent breaking the table
+    function escapeHTML(str) {
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+
+    let escapedText = escapeHTML(text);
+    let escapedQuery = escapeHTML(query);
+
+    // Escape regex special characters
+    let safeQuery = escapedQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+    try {
+        // Use regex to wrap matched words in a <span>
+        let regex = new RegExp(`(${safeQuery})`, "gi");
+
+        return escapedText.replace(regex, '<span style="background-color: red; color: white; padding: 2px; border-radius: 3px;">$1</span>');
+    } catch (error) {
+        console.error("Regex Error:", error);
+        return escapedText; // If an error occurs, return the escaped text
+    }
+}
+
+
+</script>
+
+
+
+{% endblock %}

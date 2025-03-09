@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block content %}
+
+
+    <div class="main-content">
+        <div class="container mt-5">
+            <form class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Day :</label>
+                    <input type="number" class="form-control" name="jour" value="12">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Month :</label>
+                    <input type="number" class="form-control" name="mois" value="12">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Survey type :</label>
+                    <input type="number" class="form-control" name="type_sondage" value="2">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Question number :</label>
+                    <input type="number" class="form-control" name="numero_question" value="3">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Analysed response :</label>
+                    <input type="number" class="form-control" name="reponse_analyse" value="10">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">First response date :</label>
+                    <input type="datetime-local" class="form-control" name="premiere_reponse" value="2021-01-01T00:00:00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last response date :</label>
+                    <input type="datetime-local" class="form-control" name="derniere_reponse" value="2021-01-01T00:05:00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Survey date :</label>
+                    <input type="datetime-local" class="form-control" name="date_sondage" value="2021-01-01T00:00:00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Response date :</label>
+                    <input type="datetime-local" class="form-control" name="date_reponse" value="2021-01-01T00:02:00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Language :</label>
+                    <input type="text" class="form-control" name="langue" value="ARA">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status :</label>
+                    <input type="text" class="form-control" name="statut" value="ACTIVE">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Question Type :</label>
+                    <input type="text" class="form-control" name="type_question" value="COMMENT">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">NPS category :</label>
+                    <input type="text" class="form-control" name="categorie_nps" value="Détracteur">
+                </div>
+                <div class="col-md-12 text-center">
+                    <button type="submit" class="main-btn">Predict NPS</button>
+                </div>
+            </form>
+        </div>
+
+        
+    </div>
+
+
+{% endblock %}
+

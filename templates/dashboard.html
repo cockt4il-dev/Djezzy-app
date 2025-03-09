@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+    <style>
+
+
+    </style>
+
+
+    {% block content %}
+
+    <div class="main-content" >
+
+
+        <div class="container">
+            <div class="row my-3">
+                <div class="col">
+                    <h4>Nps Dashboard</h4>
+                </div>
+            </div>
+            
+            <div class="row my-2">
+                <div class="col-md-6 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chLine"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chBar"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col-md-4 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chDonut1"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chDonut2"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 py-1">
+                    <div class="card">
+                        <div class="card-body">
+                            <canvas id="chDonut3"></canvas>
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+            <div class="row my-2">
+              <div class="col-md-6 py-1">
+                  <div class="card">
+                      <div class="card-body">
+                          <canvas id="surveyPieChart"></canvas>  <!-- Add this line -->
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+    <script>
+
+
+var colors = ['#E84D5B','#BBBBBB','#333333','#c3e6cb','#dc3545','#6c757d'];
+
+/* large line chart */
+var chLine = document.getElementById("chLine");
+
+var chartData = {
+  labels: ["S", "M", "T", "W", "T", "F", "S"],
+  datasets: [{
+    data: [589, 445, 483, 503, 689, 692, 634],
+    backgroundColor: 'transparent',
+    borderColor: colors[0],
+    borderWidth: 4,
+    pointBackgroundColor: colors[0]
+  }]
+};
+
+if (chLine) {
+  setTimeout(() => {
+    new Chart(chLine, {
+      type: 'line',
+      data: chartData,
+      options: {
+        responsive: true,
+        scales: {
+          xAxes: [{
+            ticks: {
+              beginAtZero: false
+            }
+          }]
+        },
+        legend: {
+          display: false
+        }
+      }
+    });
+  }, 25); // Delay in milliseconds
+}
+
+
+
+
+$(document).ready(function() {
+        var ctx = document.getElementById('surveyPieChart').getContext('2d');
+        var surveyChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Survey Type Count',
+                    data: [],
+                    backgroundColor: [ "#F44336", "#E91E63", "#9C27B0", "#00BCD4", "#009688", "#4CAF25", "#8BC34A",  "#FF9800", "#FF5722", ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'right',
+                    labels: {
+                      usePointStyle: true
+                    },
+                  },
+                  title: {
+                    display: true,
+                    text: 'Question types'
+                  },
+                  datalabels: {
+                        color: "white",  // Text color
+                        font: {
+                            weight: "bold",
+                            size: 14
+                        },
+                          formatter: (value, context) => {
+                              let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                              let percentage = (value / total * 100).toFixed(1) + "%";  // Convert to percentage
+                              return percentage;
+                          } 
+                  } 
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+
+        function fetchData() {
+            $.ajax({
+                url: "/api/chart-data/",
+                method: "GET",
+                success: function(response) {
+                    surveyChart.data.labels = response.labels;
+                    surveyChart.data.datasets[0].data = response.data;
+                    surveyChart.update();
+                }
+            });
+        }
+
+        fetchData();  // Load initial data
+        setInterval(fetchData, 2500);  // Refresh every 5 seconds
+    });
+
+
+
+
+/* 3 donut charts */
+var donutOptions = {
+  cutoutPercentage: 85, 
+  legend: {position:'bottom', padding:5, labels: {pointStyle:'circle', usePointStyle:true}}
+};
+
+// donut 1
+$(document).ready(function() {
+        var ctx = document.getElementById('chDonut1').getContext('2d');
+        var surveyChart = new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Survey Type Count',
+                    data: [],
+                    backgroundColor: [ "#F44336", "#E91E63", "#9C27B0", "#00BCD4", "#009688", "#4CAF25", "#8BC34A",  "#FF9800", "#FF5722", ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'right',
+                    labels: {
+                      usePointStyle: true
+                    },
+                  },
+                  title: {
+                    display: true,
+                    text: 'Question types'
+                  },
+                  datalabels: {
+                        color: "white",  // Text color
+                        font: {
+                            weight: "bold",
+                            size: 14
+                        },
+                          formatter: (value, context) => {
+                              let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                              let percentage = (value / total * 100).toFixed(1) + "%";  // Convert to percentage
+                              return percentage;
+                          } 
+                  } 
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+
+        function fetchData() {
+            $.ajax({
+                url: "/api/lang-chart-data/",
+                method: "GET",
+                success: function(response) {
+                    surveyChart.data.labels = response.labels;
+                    surveyChart.data.datasets[0].data = response.data;
+                    surveyChart.update();
+                }
+            });
+        }
+
+        fetchData();  
+        setInterval(fetchData, 10000); // Fetch every 10 seconds instead of 2.5s
+  
+    });
+
+
+// donut 2
+var chDonutData2 = {
+    labels: ['Wips', 'Pops', 'Dags'],
+    datasets: [
+      {
+        backgroundColor: colors.slice(0,3),
+        borderWidth: 0,
+        data: [40, 45, 30]
+      }
+    ]
+};
+
+var chDonut2 = document.getElementById("chDonut2");
+if (chDonut2) {
+  setTimeout(() => {
+    new Chart(chDonut2, {
+        type: 'pie',
+        data: chDonutData2,
+        options: donutOptions
+    });
+  }, 25);
+}
+
+// donut 3
+var chDonutData3 = {
+    labels: ['Angular', 'React', 'Other'],
+    datasets: [
+      {
+        backgroundColor: colors.slice(0,3),
+        borderWidth: 0,
+        data: [21, 45, 55, 33]
+      }
+    ]
+};
+
+var chDonut3 = document.getElementById("chDonut3");
+if (chDonut3) {
+  setTimeout(() => {
+    new Chart(chDonut3, {
+        type: 'pie',
+        data: chDonutData3,
+        options: donutOptions
+    });
+  }, 25);
+}
+
+
+
+/* bar chart */
+var chBar = document.getElementById("chBar");
+if (chBar) {
+  setTimeout(() => {
+    new Chart(chBar, {
+      type: 'bar',
+      data: {
+        labels: ["S", "M", "T", "W", "T", "F", "S"],
+        datasets: [
+          {
+            data: [589, 445, 483, 503, 689, 692, 634],
+            backgroundColor: colors[0]
+          },
+          {
+            data: [639, 465, 493, 478, 589, 632, 674],
+            backgroundColor: colors[1]
+          }
+        ]
+      },
+      options: {
+        legend: {
+          display: false
+        },
+        scales: {
+          xAxes: [{
+            barPercentage: 0.4,
+            categoryPercentage: 0.5
+          }]
+        }
+      }
+    });
+  }, 25);
+}
+
+
+
+
+
+
+
+    </script>
+    
+
+
+
+
+{% endblock %}

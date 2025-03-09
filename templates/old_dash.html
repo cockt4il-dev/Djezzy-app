@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> 
+    
+</head>
+<body>
+    
+    <style>
+
+:root {
+    --sidebar-width: 280px;
+    --sidebar-width-collapsed: 80px;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: linear-gradient(135deg, #F8F9FA 0%, #F8F9FA 100%);
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-width-collapsed);
+}
+
+.sidebar-link {
+    color: black;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin: 4px 16px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar-link:hover {
+    color: #ffffff;
+    background: rgb(232, 77, 91);
+    transform: translateX(5px);
+}
+
+.sidebar-link.active {
+    color: #ffffff;
+    background: rgb(232, 77, 91);
+}
+
+.logo-text {
+    background: rgb(232, 77, 91);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: opacity 0.3s ease;
+}
+
+.notification-badge {
+    background: #ff6b6b;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+}
+
+.profile-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    background-color: gray;
+    min-height: 100vh;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.collapsed~.main-content {
+    margin-left: var(--sidebar-width-collapsed);
+}
+
+.toggle-btn {
+    position: absolute;
+    right: -15px;
+    top: 20px;
+    background: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: none;
+    box-shadow: 0 2px 6px rgba(255, 0, 0, 0.15);
+    z-index: 100;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.collapsed .toggle-btn {
+    transform: rotate(180deg);
+}
+
+.collapsed .hide-on-collapse {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.collapsed .logo-text {
+    opacity: 0;
+}
+
+.collapsed .profile-info {
+    opacity: 0;
+}
+
+.collapsed .sidebar-link {
+    text-align: center;
+    padding: 1rem !important;
+    margin: 4px 8px;
+    width: 50px; /* Ensure it fits within the collapsed sidebar */
+    
+}
+
+.collapsed .sidebar-link:hover,
+.collapsed .sidebar-link.active {
+    background: rgb(232, 77, 91);
+    transform: none; /* Remove the movement */
+    width: 50px; /* Keep highlight within bounds */
+    border-radius: 8px; /* Keep it visually appealing */
+    padding: 10px; /* Keep spacing uniform */
+}
+
+.collapsed .sidebar-link i {
+    margin: 0 !important;
+}
+
+.profile-info {
+    transition: opacity 0.2s ease;
+}
+
+    </style>
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+
+    <div class="d-flex">
+        <nav class="sidebar d-flex flex-column flex-shrink-0 position-fixed">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+    
+            <div class="p-4">
+                <h4 class="logo-text fw-bold mb-0">Djezzy</h4>
+                <p class="text-muted small hide-on-collapse">Dashboard</p>
+            </div>
+    
+            <div class="nav flex-column">
+                <a href="#" class="sidebar-link active text-decoration-none p-3">
+                    <i class="fas fa-home me-3"></i>
+                    <span class="hide-on-collapse">Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-link text-decoration-none p-3">
+                    <i class="fas fa-chart-bar me-3"></i>
+                    <span class="hide-on-collapse">Analytics</span>
+                </a>
+                <a href="#" class="sidebar-link text-decoration-none p-3">
+                    <i class="fas fa-users me-3"></i>
+                    <span class="hide-on-collapse">Surveys</span>
+                </a>
+    
+                <a href="#" class="sidebar-link text-decoration-none p-3">
+                    <i class="fas fa-box me-3"></i>
+                    <span class="hide-on-collapse">Questions</span>
+                </a>
+                <a href="#" class="sidebar-link text-decoration-none p-3">
+                    <i class="fas fa-pen me-3"></i>
+                    <span class="hide-on-collapse">Predictions</span>
+                </a>
+                
+            </div>
+    
+            <div class="profile-section mt-auto p-4">
+                <div class="d-flex align-items-center">
+                    <img src="ret.png" style="height:60px" class="rounded-circle" alt="Profile">
+                    <div class="ms-3 profile-info">
+                        <h6 class="text-white mb-0">Alex Morgan</h6>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    
+       
+    
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('collapsed');
+            }
+        </script>
+    </div>
+
+</body>
+</html>
