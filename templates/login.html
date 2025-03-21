@@ -6,28 +6,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .login-container {
+            flex: 1;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #d9534f;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .login-container button {
+            width: 100%;
+            max-width: 250px;
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #c9302c;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .signup-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .image-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .image-container img {
+            max-width: 75%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <form action="{% url 'login' %}" method="post">
-        {% csrf_token %}  <!-- Prevents CSRF attacks -->
-
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
-
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
-
-        {% if messages %}
-        <div class="error-message">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
+    <div class="container">
+        <div class="login-container">
+            <h2>Login</h2>
+            <form action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                {% if messages %}
+                <div class="error-message">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <button type="submit">Login</button>
+            </form>
+            <p class="signup-link">No account? <a href="{% url 'signup' %}">Sign up</a></p>
         </div>
-        {% endif %}
 
-        <button type="submit">Login</button><br><br>
-
-    </form>
+        <div class="image-container">
+            <img src="{% static 'logo.png' %}" alt="Login Illustration">
+        </div>
+    </div>
 </body>
 </html>

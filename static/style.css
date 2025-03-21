@@ -1,0 +1,60 @@
+body {
+    font-family: Arial, sans-serif;
+    background: url("rm209-ning-20-a.jpg") no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 4px;
+    transition: background 0.3s, transform 0.3s ease;
+  }
+  
+  input:hover{
+    transform: scale(1.05);
+  }
+  
+  button {
+    padding: 10px 20px;
+    margin: 5px;
+    margin-left: 55px;
+    border: none;
+    border-radius: 4px;
+    background: white;
+    color: black;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s ease;
+  }
+  
+  button:hover {
+    background: red;
+    color: white;
+  }
+  
+  .message {
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+  }
+  
+  .error {
+    background-color: #f44336;
+    color: white;
+  }

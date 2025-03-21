@@ -1,179 +1,332 @@
 {% extends 'base.html' %}
-    <style>
 
-
-    </style>
 
 
     {% block content %}
+    <style>
 
+      .table-container {
+          max-height: 60vh; /* Set the max height */
+          overflow-y: auto;  /* Enable vertical scrolling */
+          
+      }
+
+      
+      .table thead {
+            position: sticky;
+            top: 0;
+            background-color: #1e1e1e; /* Keep background consistent */
+            z-index: 10;
+        }
+      
+        .table-dark {
+            
+        }
+        .positive { color: #2ecc71; } /* Green */
+        .negative { color: #e74c3c; } /* Red */
+        .sortable:hover { cursor: pointer; text-decoration: underline; }
+    </style>
     <div class="main-content" >
 
+      
 
-        <div class="container">
-            <div class="row my-3">
-                <div class="col">
-                    <h4>Nps Dashboard</h4>
+      <div class="container mt-4">
+        <h4 class="mb-4">NPS Dashboard</h4>
+    
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <canvas id="chpp"></canvas>
                 </div>
             </div>
-            
-            <div class="row my-2">
-                <div class="col-md-6 py-1">
-                    <div class="card">
-                        <div class="card-body">
-                            <canvas id="chLine"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 py-1">
-                    <div class="card">
-                        <div class="card-body">
-                            <canvas id="chBar"></canvas>
-                        </div>
-                    </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <canvas id="chbarr" style="height: 100vh; !important"></canvas>
                 </div>
             </div>
-            <div class="row py-2">
-                <div class="col-md-4 py-1">
-                    <div class="card">
-                        <div class="card-body">
-                            <canvas id="chDonut1"></canvas>
-                        </div>
-                    </div>
+        </div>
+    
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="card p-3">
+                    <canvas id="chLine" ></canvas>
                 </div>
-                <div class="col-md-4 py-1">
-                    <div class="card">
-                        <div class="card-body">
-                            <canvas id="chDonut2"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 py-1">
-                    <div class="card">
-                        <div class="card-body">
-                            <canvas id="chDonut3"></canvas>
-                        </div>
-                    </div>
-                </div>
-            
             </div>
-            <div class="row my-2">
-              <div class="col-md-6 py-1">
-                  <div class="card">
-                      <div class="card-body">
-                          <canvas id="surveyPieChart"></canvas>  <!-- Add this line -->
-                      </div>
-                  </div>
+        </div>
+        <div class="row mt-3">
+          <h2 class="mb-3">Monthly Responses breakdown</h2>
+          <div class="table-container">
+          
+          <table class="table table-striped">
+              <thead class="table-dark">
+                  <tr>
+                      <th class="sortable">Month <i class="fas fa-sort"></i></th>
+                      <th class="sortable">Responses <i class="fas fa-sort"></i></th>
+                      <th class="sortable">Gain <i class="fas fa-sort"></i></th>
+                      <th class="sortable">% Gain <i class="fas fa-sort"></i></th>
+                      
+                  </tr>
+              </thead>
+              <tbody id="data-table-body">
+        
+              </tbody>
+          </table>
+        </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <canvas id="chDonut2" style="height: 100vh; !important"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <canvas id="chDonut3" style="height: 100vh; !important"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <canvas id="chDonut1"></canvas>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <canvas id="chBar"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <canvas id="chDonut4"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-12">
+              <div class="card p-3">
+                  <canvas id=""></canvas>
               </div>
           </div>
-        </div>
+      </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
     <script>
 
-
-var colors = ['#E84D5B','#BBBBBB','#333333','#c3e6cb','#dc3545','#6c757d'];
-
-/* large line chart */
-var chLine = document.getElementById("chLine");
-
-var chartData = {
-  labels: ["S", "M", "T", "W", "T", "F", "S"],
-  datasets: [{
-    data: [589, 445, 483, 503, 689, 692, 634],
-    backgroundColor: 'transparent',
-    borderColor: colors[0],
-    borderWidth: 4,
-    pointBackgroundColor: colors[0]
-  }]
+var globalChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+        padding: 15
+    },
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                color: "#333",
+                font: { size: 14, weight: "bold" }
+            }
+        },
+        tooltip: {
+            backgroundColor: "rgba(0,0,0,0.8)",
+            titleFont: { size: 14, weight: "bold" },
+            bodyFont: { size: 12 }
+        }
+    }
 };
 
-if (chLine) {
-  setTimeout(() => {
-    new Chart(chLine, {
-      type: 'line',
-      data: chartData,
-      options: {
-        responsive: true,
-        scales: {
-          xAxes: [{
-            ticks: {
-              beginAtZero: false
-            }
-          }]
-        },
-        legend: {
-          display: false
-        }
-      }
-    });
-  }, 25); // Delay in milliseconds
-}
 
 
+const charcolor = [
+    "rgba(52, 152, 219, 0.9)",  // Blue
+    "rgba(46, 204, 113, 0.9)",  // Green
+    "rgba(241, 196, 15, 0.9)",  // Yellow
+    "rgba(231, 76, 60, 0.9)",   // Red
+    "rgba(155, 89, 182, 0.9)",  // Purple
+    "rgba(26, 188, 156, 0.9)",  // Teal
+    "rgba(230, 126, 34, 0.9)",  // Orange
+    "rgba(52, 73, 94, 0.9)",    // Dark Blue-Grey
+    "rgba(253, 121, 168, 0.9)", // Pink
+    "rgba(243, 156, 18, 0.9)"   // Deep Orange
+];
 
+//var colors = ['#E84D5B','#BBBBBB','#333333','#c3e6cb','#dc3545','#6c757d'];
 
-$(document).ready(function() {
-        var ctx = document.getElementById('surveyPieChart').getContext('2d');
-        var surveyChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Survey Type Count',
-                    data: [],
-                    backgroundColor: [ "#F44336", "#E91E63", "#9C27B0", "#00BCD4", "#009688", "#4CAF25", "#8BC34A",  "#FF9800", "#FF5722", ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'right',
-                    labels: {
-                      usePointStyle: true
+/* large line chart */
+//var colors = ['#E84D5B', '#BBBBBB', '#333333', '#c3e6cb', '#dc3545', '#6c757d'];
+
+/* Large Line Chart */
+var chLine = document.getElementById("chLine");
+
+// Function to fetch data from Django API
+async function fetchChartData() {
+    try {
+        let response = await fetch('/api/monthly-data/');
+        let data = await response.json();
+
+        let chartData = {
+            labels: data.labels,
+            datasets: [{
+                label: "Responses",
+                data: data.data,
+                backgroundColor: 'transparent',
+                borderColor: '#E53935',
+                borderWidth: 3,
+                pointBackgroundColor: '#E53935',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        };
+
+        if (chLine) {
+            new Chart(chLine, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: 10
                     },
-                  },
-                  title: {
-                    display: true,
-                    text: 'Question types'
-                  },
-                  datalabels: {
-                        color: "white",  // Text color
-                        font: {
-                            weight: "bold",
-                            size: 14
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: "#444",
+                                font: { size: 12, weight: "bold" }
+                            },
+                            grid: {
+                                color: "rgba(0, 0, 0, 0.1)"
+                            },
+                            title: {
+                                display: true,
+                                text: "Months",
+                                font: { size: 14, weight: "bold" }
+                            }
                         },
-                          formatter: (value, context) => {
-                              let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                              let percentage = (value / total * 100).toFixed(1) + "%";  // Convert to percentage
-                              return percentage;
-                          } 
-                  } 
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-
-
-        function fetchData() {
-            $.ajax({
-                url: "/api/chart-data/",
-                method: "GET",
-                success: function(response) {
-                    surveyChart.data.labels = response.labels;
-                    surveyChart.data.datasets[0].data = response.data;
-                    surveyChart.update();
+                        y: {
+                            ticks: {
+                                color: "#444",
+                                font: { size: 12, weight: "bold" },
+                                beginAtZero: true
+                            },
+                            grid: {
+                                color: "rgba(0, 0, 0, 0.1)"
+                            },
+                            title: {
+                                display: true,
+                                text: "Number of Responses",
+                                font: { size: 14, weight: "bold" }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: "#333",
+                                font: { size: 14, weight: "bold" }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: "rgba(0,0,0,0.8)",
+                            titleFont: { size: 14, weight: "bold" },
+                            bodyFont: { size: 12 }
+                        }
+                    }
                 }
             });
         }
+    } catch (error) {
+        console.error("Error loading chart data:", error);
+    }
+}
 
-        fetchData();  // Load initial data
-        setInterval(fetchData, 2500);  // Refresh every 5 seconds
+fetchChartData();
+
+
+
+
+$(document).ready(function () {
+    var ctx = document.getElementById('surveyPieChart').getContext('2d');
+    var surveyChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Survey Type Count',
+                data: [],
+                backgroundColor: charcolor,
+
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: 10
+            },
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        usePointStyle: true,
+                        font: { size: 12, weight: "bold" }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Survey Types',
+                    font: { size: 16, weight: "bold" }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(0,0,0,0.8)",
+                    titleFont: { size: 14, weight: "bold" },
+                    bodyFont: { size: 12 },
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            let dataset = tooltipItem.dataset;
+                            let total = dataset.data.reduce((a, b) => a + b, 0);
+                            let value = dataset.data[tooltipItem.dataIndex];
+                            let percentage = ((value / total) * 100).toFixed(1) + "%";
+                            return `${tooltipItem.label}: ${value} (${percentage})`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: "white",
+                    font: { weight: "bold", size: 12 },
+                    formatter: (value, context) => {
+                        let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        let percentage = ((value / total) * 100).toFixed(1) + "%";
+                        return percentage;
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
+
+    function fetchData() {
+        $.ajax({
+            url: "/api/chart-data/",
+            method: "GET",
+            success: function (response) {
+                surveyChart.data.labels = response.labels;
+                surveyChart.data.datasets[0].data = response.data;
+                surveyChart.update();
+            }
+        });
+    }
+
+    fetchData();
+    setInterval(fetchData, 5000);
+});
+
+
 
 
 
@@ -186,152 +339,446 @@ var donutOptions = {
 
 // donut 1
 $(document).ready(function() {
-        var ctx = document.getElementById('chDonut1').getContext('2d');
-        var surveyChart = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Survey Type Count',
-                    data: [],
-                    backgroundColor: [ "#F44336", "#E91E63", "#9C27B0", "#00BCD4", "#009688", "#4CAF25", "#8BC34A",  "#FF9800", "#FF5722", ],
-                    borderWidth: 1
-                }]
+    var ctx = document.getElementById('chDonut1').getContext('2d');
+    var surveyChart = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Survey Type Count',
+                data: [],
+                backgroundColor: charcolor,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,  // Allow custom sizing
+            layout: {
+                padding: 10  // Add space for better readability
             },
-            options: {
-                responsive: true,
-                plugins: {
-                  legend: {
+            plugins: {
+                legend: {
                     position: 'right',
                     labels: {
-                      usePointStyle: true
-                    },
-                  },
-                  title: {
-                    display: true,
-                    text: 'Question types'
-                  },
-                  datalabels: {
-                        color: "white",  // Text color
+                        usePointStyle: true,
                         font: {
-                            weight: "bold",
-                            size: 14
-                        },
-                          formatter: (value, context) => {
-                              let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                              let percentage = (value / total * 100).toFixed(1) + "%";  // Convert to percentage
-                              return percentage;
-                          } 
-                  } 
+                            size: 12,  // Slightly smaller for compactness
+                            weight: 'bold'
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Question Types',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(0,0,0,0.8)",
+                    bodyFont: { size: 12 },
+                    titleFont: { size: 14, weight: 'bold' },
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            let dataset = tooltipItem.dataset;
+                            let total = dataset.data.reduce((a, b) => a + b, 0);
+                            let value = dataset.data[tooltipItem.dataIndex];
+                            let percentage = ((value / total) * 100).toFixed(1) + "%";
+                            return `${tooltipItem.label}: ${value} (${percentage})`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: "white",
+                    font: {
+                        weight: "bold",
+                        size: 12
+                    },
+                    formatter: (value, context) => {
+                        let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        let percentage = ((value / total) * 100).toFixed(1) + "%";
+                        return percentage;
+                    }
                 }
-            },
-            plugins: [ChartDataLabels]
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    function fetchData() {
+        $.ajax({
+            url: "/api/lang-chart-data/",
+            method: "GET",
+            success: function(response) {
+                surveyChart.data.labels = response.labels;
+                surveyChart.data.datasets[0].data = response.data;
+                surveyChart.update();
+            }
         });
+    }
 
+    fetchData();
+    setInterval(fetchData, 10000); // Fetch every 10 seconds
+});
 
-        function fetchData() {
-            $.ajax({
-                url: "/api/lang-chart-data/",
-                method: "GET",
-                success: function(response) {
-                    surveyChart.data.labels = response.labels;
-                    surveyChart.data.datasets[0].data = response.data;
-                    surveyChart.update();
-                }
-            });
-        }
-
-        fetchData();  
-        setInterval(fetchData, 10000); // Fetch every 10 seconds instead of 2.5s
-  
-    });
-
-
-// donut 2
-var chDonutData2 = {
-    labels: ['Wips', 'Pops', 'Dags'],
-    datasets: [
-      {
-        backgroundColor: colors.slice(0,3),
-        borderWidth: 0,
-        data: [40, 45, 30]
-      }
-    ]
-};
-
-var chDonut2 = document.getElementById("chDonut2");
-if (chDonut2) {
-  setTimeout(() => {
-    new Chart(chDonut2, {
-        type: 'pie',
-        data: chDonutData2,
-        options: donutOptions
-    });
-  }, 25);
-}
-
-// donut 3
-var chDonutData3 = {
-    labels: ['Angular', 'React', 'Other'],
-    datasets: [
-      {
-        backgroundColor: colors.slice(0,3),
-        borderWidth: 0,
-        data: [21, 45, 55, 33]
-      }
-    ]
-};
-
-var chDonut3 = document.getElementById("chDonut3");
-if (chDonut3) {
-  setTimeout(() => {
-    new Chart(chDonut3, {
-        type: 'pie',
-        data: chDonutData3,
-        options: donutOptions
-    });
-  }, 25);
-}
 
 
 
 /* bar chart */
-var chBar = document.getElementById("chBar");
-if (chBar) {
-  setTimeout(() => {
-    new Chart(chBar, {
-      type: 'bar',
-      data: {
-        labels: ["S", "M", "T", "W", "T", "F", "S"],
-        datasets: [
-          {
-            data: [589, 445, 483, 503, 689, 692, 634],
-            backgroundColor: colors[0]
-          },
-          {
-            data: [639, 465, 493, 478, 589, 632, 674],
-            backgroundColor: colors[1]
-          }
-        ]
-      },
-      options: {
-        legend: {
-          display: false
+var chpp = document.getElementById("chpp");
+
+if (chpp) {
+  fetch("/api/nps-overview-data/")  // Ensure this matches your Django URL
+    .then(response => response.json())
+    .then(data => {
+      new Chart(chpp, {
+        type: 'doughnut',
+        data: {
+          labels: data.labels, // ['Promoters', 'Passives', 'Detractors']
+          datasets: [
+            {
+              label: "Number of Responses",
+              data: data.counts, // Counts from API
+              backgroundColor: ["#2ECC71", "#F1C40F", "#E74C3C"], // Green, Yellow, Red
+              borderRadius: 5
+            }
+          ]
         },
-        scales: {
-          xAxes: [{
-            barPercentage: 0.4,
-            categoryPercentage: 0.5
-          }]
-        }
-      }
-    });
-  }, 25);
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%', // More space for text
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 12 }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Nps Summary',
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.formattedValue;
+                  const percentage = parseFloat(data.percentages[context.dataIndex]).toFixed(1) + '%';
+                  return `${label}: ${value} (${percentage})`;
+                }
+              }
+            }
+          }
+        },
+        plugins: [{
+          id: 'customTextPlugin',
+          beforeDraw: (chart) => {
+            let width = chart.width,
+                height = chart.height,
+                ctx = chart.ctx;
+
+            ctx.restore();
+            
+            let fontSize = Math.min(width, height) / 20; // Adjust font size dynamically
+            ctx.font = `${fontSize}px Arial`;
+            ctx.fillStyle = "#333"; // Dark text color
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle"; 
+
+            let text = `NPS Score: ${data.nps_score}`; // Use dynamic NPS score
+            let textX = width / 2.4;
+            let textY = height / 1.9;
+
+            ctx.fillText(text, textX, textY);
+            ctx.save();
+          }
+        }]
+      });
+    })
+    .catch(error => console.error("Error loading chart data:", error));
 }
 
 
 
 
+
+
+
+
+var chBar = document.getElementById("chBar");
+if (chBar) {
+  fetch("/api/question-type-data/")  // Replace with your correct API endpoint
+    .then(response => response.json())
+    .then(data => {
+      new Chart(chBar, {
+        type: 'bar',
+        data: {
+          labels: data.labels, // X-axis: Question types
+          datasets: [
+            {
+              label: "Responses",
+              data: data.counts,
+              backgroundColor: charcolor.slice(0, data.labels.length),
+              borderRadius: 5 // Rounded corners for bars
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: "#333", // Darker font color for better contrast
+                font: {
+                  size: 14, // Slightly larger font
+                  weight: 'bold'
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(0,0,0,0.7)",
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 12 }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#444",
+                font: { size: 12, weight: 'bold' }
+              },
+              grid: { display: false } // Hide X-axis gridlines for cleaner look
+            },
+            y: {
+              ticks: {
+                color: "#444",
+                font: { size: 12, weight: 'bold' },
+                beginAtZero: true
+              },
+              grid: {
+                color: "rgba(0, 0, 0, 0.1)" // Subtle grid lines
+              }
+            }
+          },
+          layout: {
+            padding: 10
+          },
+          barPercentage: 0.6,
+          categoryPercentage: 0.7
+        }
+      });
+    })
+    .catch(error => console.error("Error loading chart data:", error));
+}
+
+
+$(document).ready(function () {
+    var ctx = document.getElementById("chbarr").getContext("2d");
+
+    var npsBarChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: [], // Will be populated dynamically
+            datasets: [{
+                label: "Response Count",
+                data: [],
+                backgroundColor: charcolor[0],
+                borderRadius: 5,
+                barThickness: 30,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: "NPS", font: { size: 14, weight: "bold" } },
+                    grid: { display: false }
+                },
+                y: {
+                    title: { display: true, text: "Response Count", font: { size: 14, weight: "bold" } },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return `Count: ${tooltipItem.formattedValue}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    function fetchData() {
+        $.ajax({
+            url: "/api/nps-distribution/",
+            method: "GET",
+            success: function (response) {
+                npsBarChart.data.labels = response.labels;
+                npsBarChart.data.datasets[0].data = response.data;
+                npsBarChart.update();
+            }
+        });
+    }
+
+    fetchData();  // Fetch data on page load
+    setInterval(fetchData, 5000); // Refresh every 5 seconds
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/monthly-data/")
+        .then(response => response.json())
+        .then(data => populateTable(data))
+        .catch(error => console.error("Error fetching data:", error));
+
+    function populateTable(data) {
+        let labels = data.labels.reverse();  // Reverse the order to start from latest
+        let responses = data.data.reverse(); // Reverse response data accordingly
+        const tableBody = document.getElementById("data-table-body");
+        tableBody.innerHTML = ""; // Clear existing rows
+
+        // Function to convert "YYYY-MM" to "Month Year"
+        function formatMonth(ym) {
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const [year, month] = ym.split("-");
+            return `${months[parseInt(month) - 1]} ${year}`;
+        }
+
+        for (let i = 0; i < labels.length; i++) {
+            const month = formatMonth(labels[i]);
+            const responseCount = responses[i];
+            let gain = "-";
+            let percentGain = "-";
+
+            if (i > 0) {
+                gain = responseCount - responses[i - 1];
+                percentGain = ((gain / responses[i - 1]) * 100).toFixed(1) + "%";
+            }
+
+            // Determine positive or negative class
+            let gainClass = gain >= 0 ? "text-success" : "text-danger";
+            let percentClass = percentGain.includes("-") ? "text-danger" : "text-success";
+
+            const row = `
+                <tr>
+                    <td>${month}</td>
+                    <td>${responseCount.toLocaleString()}</td>
+                    <td class="${gainClass}">${gain !== "-" ? gain.toLocaleString() : "-"}</td>
+                    <td class="${percentClass}">${percentGain}</td>
+                </tr>
+            `;
+
+            tableBody.innerHTML += row;
+        }
+    }
+});
+
+
+$(document).ready(function () {
+    function fetchData() {
+        $.ajax({
+            url: "/api/monthly-data/",
+            method: "GET",
+            success: function (response) {
+                populateTable(response.labels, response.data);
+            }
+        });
+    }
+
+    function populateTable(labels, data) {
+        let tableBody = $("#data-table-body");
+        tableBody.empty(); // Clear previous data
+
+        let rows = [];
+        for (let i = 0; i < labels.length; i++) {
+            let monthDate = new Date(labels[i] + "-01"); // Convert to Date object
+            let monthName = monthDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+            let gain = i === 0 ? "-" : (data[i] - data[i - 1]); // Calculate gain
+            let percentGain = i === 0 ? "-" : ((gain / data[i - 1]) * 100).toFixed(1) + "%"; // Calculate % gain
+
+            rows.push(`
+                <tr>
+                    <td>${monthName}</td>
+                    <td>${data[i].toLocaleString()}</td>
+                    <td class="${gain >= 0 ? 'text-success' : 'text-danger'}">${gain.toLocaleString()}</td>
+                    <td class="${gain >= 0 ? 'text-success' : 'text-danger'}">${percentGain}</td>
+                </tr>
+            `);
+        }
+
+        // Default sorting: latest to oldest
+        rows.reverse();
+        tableBody.html(rows.join(""));
+    }
+
+
+    
+// Sorting functionality
+// Sorting functionality
+$(".sortable").on("click", function () {
+    let columnIndex = $(this).index();
+    let tableBody = $("#data-table-body");
+    let rows = tableBody.find("tr").toArray();
+    let isAscending = $(this).data("order") !== "asc"; // Toggle correctly on first click
+
+    rows.sort((a, b) => {
+        let cellA = $(a).children().eq(columnIndex).text().trim();
+        let cellB = $(b).children().eq(columnIndex).text().trim();
+
+        // Sort Month column chronologically (index 0)
+        if (columnIndex === 0) {
+            let dateA = convertMonthYearToDate(cellA);
+            let dateB = convertMonthYearToDate(cellB);
+            return isAscending ? dateA - dateB : dateB - dateA;
+        }
+
+        // Sort numeric columns (Responses, Gain, % Gain)
+        let numA = parseFloat(cellA.replace(/,/g, "")) || 0;
+        let numB = parseFloat(cellB.replace(/,/g, "")) || 0;
+        return isAscending ? numA - numB : numB - numA;
+    });
+
+    // Update table content
+    tableBody.html(rows);
+
+    // Toggle sort order AFTER sorting is applied
+    $(this).data("order", isAscending ? "asc" : "desc");
+
+    // Update sort icons correctly on first click
+    $(".sortable i").removeClass("fa-arrow-up-wide-short fa-arrow-down-wide-short").addClass("fa-sort");
+    $(this).find("i").removeClass("fa-sort").addClass(isAscending ? "fa-arrow-up-wide-short" : "fa-arrow-down-wide-short");
+});
+
+// Function to convert "January 2021" to a Date object for proper sorting
+function convertMonthYearToDate(monthYear) {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let parts = monthYear.split(" ");
+    if (parts.length !== 2) return new Date(); // Fallback to current date if invalid
+    let monthIndex = months.indexOf(parts[0]);
+    let year = parseInt(parts[1]);
+    return new Date(year, monthIndex);
+}
+
+
+
+    fetchData();
+});
 
 
 

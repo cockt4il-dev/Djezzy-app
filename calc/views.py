@@ -2,21 +2,28 @@ from django.shortcuts import render,redirect #N
 from django.http import HttpResponse 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-
+from django.db import connection
 from django.contrib.auth import authenticate, login #N
 from django.contrib import messages #N
-
-from .models import NPSQuestions, NPSResponses  # Import your model
+from .models import NPSQuestions, NPSResponses, MonthlyResponseCounts  # Import your model
 from django.db.models import Count  # Import Count for aggregation
-
-
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.db.models.functions import TruncMonth, Cast
+from django.db.models import Count, DateTimeField
+from django.http import JsonResponse
+from django.core.cache import cache
+from .models import NPSResponses  
+from django.db.models import F
+
 
 from django.core.paginator import Paginator
 
+def home_redirect(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")  
+    return redirect("login")  
 
 # Create your views here.
 def dashboard(request):
@@ -68,6 +75,14 @@ def signup_view(request):
         return JsonResponse({'message': 'User registered successfully'}, status=201)
 
     return render(request, 'signup.html')  # Render HTML signup form for GET requests
+
+
+@csrf_exempt
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return redirect("login")
+    return redirect("login")
 
 
 
@@ -171,13 +186,88 @@ def format_number(num):
     else:
         return str(num)
 
+
+# Estimated total count value (optimized)
 def analytics(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT reltuples::bigint FROM pg_class WHERE relname = 'calc_npsresponses';")
+        total_responses = cursor.fetchone()[0]  # Estimated count
 
-    total_responses = NPSResponses.objects.count()
-
-    context = {
-        'total_responses': format_number(total_responses),
-    }
+    context = {'total_responses': format_number(int(total_responses))}
     
     return render(request, 'analytics.html', context)
 
+
+def monthly_data(request):
+    data = MonthlyResponseCounts.objects.all().order_by("year_month")
+    labels = [entry.year_month for entry in data]
+    counts = [entry.count for entry in data]
+
+    return JsonResponse({"labels": labels, "data": counts})
+
+
+
+from django.http import JsonResponse
+from django.utils.timezone import now
+from django.db import connection
+
+def refresh_materialized_view(request):
+    # Get the current date
+    current_date = now().date()
+
+    # Check if it's the first day of the month
+    if current_date.day == 1:
+        with connection.cursor() as cursor:
+            cursor.execute("REFRESH MATERIALIZED VIEW monthly_response_counts;")
+
+        return JsonResponse({"status": "success", "message": "Materialized view refreshed!"})
+    else:
+        return JsonResponse({"status": "skipped", "message": "Not the first of the month!"})
+
+
+
+def get_question_type_data(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT question_type, response_count FROM question_type_summary;")
+        rows = cursor.fetchall()
+
+    data = {
+        "labels": [row[0] for row in rows],  
+        "counts": [row[1] for row in rows],  
+    }
+    return JsonResponse(data)
+
+
+
+def get_nps_overview_data(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT label, percentage, count FROM nps_overview;")
+        rows = cursor.fetchall()
+
+    # Extract data
+    labels = [row[0] for row in rows]  # 'Promoters', 'Passives', 'Detractors'
+    percentages = {row[0]: row[1] for row in rows}  # {'Promoters': xx, 'Passives': yy, 'Detractors': zz}
+    counts = {row[0]: row[2] for row in rows}  # {'Promoters': xx, 'Passives': yy, 'Detractors': zz}
+
+    # Calculate NPS Score: (% Promoters - % Detractors)
+    nps_score = round(percentages.get('Promoters', 0) - percentages.get('Detractors', 0))
+
+    data = {
+        "labels": labels,
+        "percentages": list(percentages.values()),
+        "counts": list(counts.values()),
+        "nps_score": nps_score  # Include NPS Score in API response
+    }
+
+    return JsonResponse(data)
+
+def get_nps_distribution(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT response_parsed, response_count FROM nps_responses_distribution ORDER BY response_parsed ASC;")
+        rows = cursor.fetchall()
+
+    # Extract data for Chart.js
+    labels = [str(row[0]) for row in rows]  # response_parsed (1,2,3,...,10)
+    data = [row[1] for row in rows]         # response_count (values)
+
+    return JsonResponse({'labels': labels, 'data': data})
