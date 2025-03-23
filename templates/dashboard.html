@@ -4,7 +4,9 @@
 
     {% block content %}
     <style>
-
+    canvas{
+        height: 100vh !important;
+    }
       .table-container {
           max-height: 60vh; /* Set the max height */
           overflow-y: auto;  /* Enable vertical scrolling */
@@ -26,7 +28,7 @@
         .negative { color: #e74c3c; } /* Red */
         .sortable:hover { cursor: pointer; text-decoration: underline; }
     </style>
-    <div class="main-content" >
+    <div class="main-content">
 
       
 
@@ -86,7 +88,7 @@
             </div>
             <div class="col-md-4">
                 <div class="card p-3">
-                    <canvas id="chDonut1"></canvas>
+                    <canvas id="chDonut4"></canvas>
                 </div>
             </div>
         </div>
@@ -99,7 +101,7 @@
             </div>
             <div class="col-md-6">
                 <div class="card p-3">
-                    <canvas id="chDonut4"></canvas>
+                    <canvas id="chDonut1"></canvas>
                 </div>
             </div>
         </div>
@@ -157,6 +159,8 @@ const charcolor = [
 
 /* large line chart */
 //var colors = ['#E84D5B', '#BBBBBB', '#333333', '#c3e6cb', '#dc3545', '#6c757d'];
+
+
 
 /* Large Line Chart */
 var chLine = document.getElementById("chLine");
@@ -595,22 +599,24 @@ $(document).ready(function () {
                 data: [],
                 backgroundColor: charcolor[0],
                 borderRadius: 5,
-                barThickness: 30,
+                
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                x: {
-                    title: { display: true, text: "NPS", font: { size: 14, weight: "bold" } },
-                    grid: { display: false }
-                },
-                y: {
-                    title: { display: true, text: "Response Count", font: { size: 14, weight: "bold" } },
-                    beginAtZero: true
-                }
-            },
+    x: {
+        title: { display: true, text: "NPS", font: { size: 14, weight: "bold" } },
+        grid: { display: false },
+        barPercentage: 0.1,
+        categoryPercentage: 0.1
+    },
+    y: {
+        title: { display: true, text: "Response Count", font: { size: 14, weight: "bold" } },
+        beginAtZero: true
+    }
+},
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -620,7 +626,8 @@ $(document).ready(function () {
                         }
                     }
                 }
-            }
+            },
+        
         }
     });
 

@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
+
+
     #table {
         
     }
@@ -20,14 +22,14 @@
     .card {
     flex: 1; /* Makes all cards take equal width */
     min-width: 225px; /* Ensures they don't shrink too much */
-    min-height: 175px;
+    min-height: 125px;
     text-align: center;
     padding: 20px;
     background-color: white;
     border: none;
     border-radius: 10px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    margin-top: 10%;
+    
     /* New fix: Center text vertically */
     display: flex;
     flex-direction: column;
@@ -37,6 +39,27 @@
     transition: all 0.15s ease ;
 }
 
+    .card-8{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1; /* Makes all cards take equal width */
+    min-width: 225px; /* Ensures they don't shrink too much */
+    min-height: 35vh;
+    text-align: center;
+    padding: 20px;
+    background-color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    
+    
+    
+    height: 120px; /* Adjust height as needed */
+
+    transition: all 0.15s ease ;
+    }
 
     .card:hover{
 
@@ -96,7 +119,7 @@ input:hover {
   width: 100%;
   padding: 10px; /* Adjust as needed */
   padding-right: 0;
-  margin-top: 25%;
+  margin-top: 5%;
 
 
 }
@@ -144,16 +167,74 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 .progres-bar-striped{
     background-color: red;
 }
+
+    /* Circle Progress Styling */
+
+
+    .progress-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+
+        .progress-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        
+
+    
+    .card-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px; /* Space below the title */
+}
+
+  
+
+.progress-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: #979797; /* Grey color */
+    }
+
+    /* Centered FontAwesome Icon */
+    
+
+    /* Tooltip Styling */
+    .progress-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);  /* Slightly transparent black */
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.5;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+    
 </style>
 
 <div class="main-content">
-    <div class="container">
+    <div class="container-fluid">
 
 
     
     <div class="row my-3">
         <div class="col">
-            <h4>Nps Questions</h4>
+            <h4>NPS Questions</h4>
         </div>
     </div>
     
@@ -164,11 +245,7 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     <!-- Cards Section -->
     <div class="cards-container">
         <div class="card">
-            <h5>{{total_questions}}</h5>
-            <p><strong>Total questions</strong></p> <!-- You can dynamically load this number from the backend -->
-            <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar progres-bar-striped" style="width: 90%"></div>
-              </div>
+            
         </div>
         <div class="card">
             <h5>#</h5>
@@ -178,7 +255,76 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
             <h5>#</h5>
             <p><strong>5</strong></p>
         </div>
+        
     </div>
+
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <div class="card-8">
+                <h5>#</h5>
+                <p><strong>this will have a chart of survey questions count per survey type or sm typa shii</strong></p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card-8">
+                <div class="card-title">
+                    <h4><strong>Total questions</strong></h3>
+                    <h5>{{ total_questions }}</h5>
+                    
+
+                </div>
+                
+        
+            <!-- Progress Circle Container -->
+            <div class="progress-container">
+                <div class="progress-circle third"></div>  <!-- Bottom layer (gray) -->
+                <div class="progress-circle second"></div> <!-- Middle layer (light gray) -->
+                <div class="progress-circle first"></div>  <!-- Top layer (red) -->
+                <div class="progress-tooltip">28%</div>
+                <div class="progress-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card-8">
+                <canvas id="multiSegmentProgress" width="150" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById("multiSegmentProgress").getContext("2d");
+    
+        new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Segment 1", "Segment 2", "Segment 3"], // Optional labels
+                datasets: [{
+                    data: [28, 24, 48], // Percentages (total 100%)
+                    backgroundColor: ["#EF233C", "#EDF2F4", "#8D99AE"], // Colors for segments
+                    borderWidth: 0, // Removes the gap between segments
+                    cutout: "80%", // Controls the inner empty space (adjust for thickness)
+                    borderRadius: 10,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        enabled: true,
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.raw + "%"; // Show percentage
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
     <div class="search-container d-flex align-items-center gap-3">
         <!-- Bootstrap Dropdown -->
         <div class="dropdown">
@@ -246,6 +392,66 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     </div>
     
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-circle-progress/1.2.2/circle-progress.min.js"></script>
+
+
+
+
+
+<script>
+$(document).ready(function () {
+    let data = [
+        { value: 0.28, color: "#EF233C", label: "Red" },  // First 28% (Red)
+        { value: 0.24, color: "#EDF2F4", label: "Gray" },  // Next 24% (Light Gray, up to 52%)
+        { value: 0.48, color: "#8D99AE", label: "Blue" }   // Last 48% (Blue Gray, up to 100%)
+    ];
+
+    function createCircle(selector, value, color, startOffset, label) {
+        let $circle = $(selector);
+
+        $circle.circleProgress({
+            value: value,
+            size: 150,
+            thickness: 8,
+            emptyFill: "rgba(0,0,0,0)", // Fully transparent
+            startAngle: (-Math.PI / 2) + (2 * Math.PI * startOffset),
+            lineCap: "round",
+            fill: { color: color }
+        }).on("circle-animation-progress", function (event, progress, stepValue) {
+            // Update tooltip with ALL segment values
+            let tooltipText = `
+                 <span style="color: #EF233C; font-size: 16px;">●</span> <strong>${Math.round(data[0].value * 100)}%</strong> - ${data[0].label} <br>
+    <span style="color: #EDF2F4; font-size: 16px;">●</span> <strong>${Math.round(data[1].value * 100)}%</strong> - ${data[1].label} <br>
+    <span style="color: #8D99AE; font-size: 16px;">●</span> <strong>${Math.round(data[2].value * 100)}%</strong> - ${data[2].label}
+            `;
+            $(".progress-tooltip").html(tooltipText);
+        });
+
+        // Show tooltip on hover
+        $circle.parent().hover(
+            function () {
+                $(".progress-tooltip").fadeIn();
+            },
+            function () {
+                $(".progress-tooltip").fadeOut();
+            }
+        );
+    }
+
+    // Create overlapping progress circles
+    createCircle(".progress-circle.first", data[0].value, data[0].color, 0, data[0].label);
+    createCircle(".progress-circle.second", data[1].value, data[1].color, data[0].value, data[1].label);
+    createCircle(".progress-circle.third", data[2].value, data[2].color, data[0].value + data[1].value, data[2].label);
+});
+
+
+</script>
+
+
+
+
 
 
 <script>
