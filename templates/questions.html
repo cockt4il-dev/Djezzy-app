@@ -222,6 +222,7 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     white-space: nowrap;
     z-index: 10;
+    display: none;
 }
 
     
@@ -402,50 +403,51 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 
 <script>
 $(document).ready(function () {
-    let data = [
-        { value: 0.28, color: "#EF233C", label: "Red" },  // First 28% (Red)
-        { value: 0.24, color: "#EDF2F4", label: "Gray" },  // Next 24% (Light Gray, up to 52%)
-        { value: 0.48, color: "#8D99AE", label: "Blue" }   // Last 48% (Blue Gray, up to 100%)
-    ];
+    function fetchAndCalculate() {
+        $.getJSON("/api/lang-chart-data/", function (response) {
+            let total = response.data.reduce((acc, val) => acc + val, 0);
+            let percentages = response.data.map(value => value / total);
 
-    function createCircle(selector, value, color, startOffset, label) {
-        let $circle = $(selector);
+            let data = [
+                { value: percentages[0], color: "#EF233C", label: response.labels[0] },
+                { value: percentages[1], color: "#EDF2F4", label: response.labels[1] },
+                { value: percentages[2], color: "#8D99AE", label: response.labels[2] }
+            ];
 
-        $circle.circleProgress({
-            value: value,
-            size: 150,
-            thickness: 8,
-            emptyFill: "rgba(0,0,0,0)", // Fully transparent
-            startAngle: (-Math.PI / 2) + (2 * Math.PI * startOffset),
-            lineCap: "round",
-            fill: { color: color }
-        }).on("circle-animation-progress", function (event, progress, stepValue) {
-            // Update tooltip with ALL segment values
-            let tooltipText = `
-                 <span style="color: #EF233C; font-size: 16px;">●</span> <strong>${Math.round(data[0].value * 100)}%</strong> - ${data[0].label} <br>
-    <span style="color: #EDF2F4; font-size: 16px;">●</span> <strong>${Math.round(data[1].value * 100)}%</strong> - ${data[1].label} <br>
-    <span style="color: #8D99AE; font-size: 16px;">●</span> <strong>${Math.round(data[2].value * 100)}%</strong> - ${data[2].label}
-            `;
-            $(".progress-tooltip").html(tooltipText);
-        });
+            function createCircle(selector, value, color, startOffset, label) {
+                let $circle = $(selector);
+                
+                $circle.circleProgress({
+                    value: value,
+                    size: 150,
+                    thickness: 8,
+                    emptyFill: "rgba(0,0,0,0)",
+                    startAngle: (-Math.PI / 2) + (2 * Math.PI * startOffset),
+                    lineCap: "round",
+                    fill: { color: color }
+                }).on("circle-animation-progress", function () {
+                    let tooltipText = `
+                        <span style="color: #EF233C; font-size: 16px;">●</span> <strong>${Math.round(data[0].value * 100)}%</strong> - ${data[0].label} <br>
+                        <span style="color: #EDF2F4; font-size: 16px;">●</span> <strong>${Math.round(data[1].value * 100)}%</strong> - ${data[1].label} <br>
+                        <span style="color: #8D99AE; font-size: 16px;">●</span> <strong>${Math.round(data[2].value * 100)}%</strong> - ${data[2].label}
+                    `;
+                    $(".progress-tooltip").html(tooltipText);
+                });
 
-        // Show tooltip on hover
-        $circle.parent().hover(
-            function () {
-                $(".progress-tooltip").fadeIn();
-            },
-            function () {
-                $(".progress-tooltip").fadeOut();
+                $circle.parent().hover(
+                    function () { $(".progress-tooltip").fadeIn(); },
+                    function () { $(".progress-tooltip").fadeOut(); }
+                );
             }
-        );
+
+            createCircle(".progress-circle.first", data[0].value, data[0].color, 0, data[0].label);
+            createCircle(".progress-circle.second", data[1].value, data[1].color, data[0].value, data[1].label);
+            createCircle(".progress-circle.third", data[2].value, data[2].color, data[0].value + data[1].value, data[2].label);
+        });
     }
 
-    // Create overlapping progress circles
-    createCircle(".progress-circle.first", data[0].value, data[0].color, 0, data[0].label);
-    createCircle(".progress-circle.second", data[1].value, data[1].color, data[0].value, data[1].label);
-    createCircle(".progress-circle.third", data[2].value, data[2].color, data[0].value + data[1].value, data[2].label);
+    fetchAndCalculate();
 });
-
 
 </script>
 
