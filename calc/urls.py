@@ -20,5 +20,6 @@ urlpatterns = [
     path("api/question-type-data/", views.get_question_type_data, name="question-type-data"),
     path("api/nps-overview-data/", views.get_nps_overview_data, name="question-type-data"),
     path("api/nps-distribution/", views.get_nps_distribution, name="nps-distribution"),
+    
 ]
 

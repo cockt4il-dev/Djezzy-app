@@ -271,3 +271,6 @@ def get_nps_distribution(request):
     data = [row[1] for row in rows]         # response_count (values)
 
     return JsonResponse({'labels': labels, 'data': data})
+
+
+
