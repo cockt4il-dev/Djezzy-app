@@ -67,7 +67,20 @@
             <div class="card h-100 p-3">
               <h6>Total responses</h6>
               <h2>{{total_responses}}</h2>
-              <p class="text-success">▲ 22.6k</p>
+              {% if monthly_diff > 0 %}
+    <p class="text-success">
+        ▲ {{ monthly_diff_display }}
+        </p>
+    {% elif monthly_diff < 0 %}
+        <p class="text-danger">
+            ▼ {{ monthly_diff_display }}
+        </p>
+    {% else %}
+        <p class="text-secondary">
+            – No change {{monthly_diff_display}}
+        </p>
+    {% endif %}
+
               <p>by platform</p>
               <div class="d-flex justify-content-between">
                 <span>Web</span><span>122.2k</span>

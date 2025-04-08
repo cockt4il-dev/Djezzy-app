@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.contrib.auth import authenticate, login #N
 from django.contrib import messages #N
-from .models import NPSQuestions, NPSResponses, MonthlyResponseCounts  # Import your model
+from .models import NPSQuestions, NPSResponses, MonthlyResponseCounts, AvgNpsPerRegion  # Import your model
 from django.db.models import Count  # Import Count for aggregation
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.core.cache import cache
 from .models import NPSResponses  
 from django.db.models import F
+from django.utils.timezone import now
 
 
 from django.core.paginator import Paginator
@@ -189,11 +190,35 @@ def format_number(num):
 
 # Estimated total count value (optimized)
 def analytics(request):
+    
+    data = MonthlyResponseCounts.objects.all().order_by("year_month")
+    labels = [entry.year_month for entry in data]
+    counts = [entry.count for entry in data]
+
+    if len(counts) >= 2:
+        current = counts[-1]
+        previous = counts[-2]
+        difference = current - previous
+        percent_change = ((difference / previous) * 100) if previous != 0 else 0
+    else:
+        current = counts[-1] if counts else 0
+        previous = 0
+        difference = 0
+        percent_change = 0
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT reltuples::bigint FROM pg_class WHERE relname = 'calc_npsresponses';")
         total_responses = cursor.fetchone()[0]  # Estimated count
 
-    context = {'total_responses': format_number(int(total_responses))}
+    context = {
+        'total_responses': format_number(int(total_responses)),
+        "current_count": current,
+        "previous_count": previous,
+        "monthly_diff": difference,
+        "monthly_diff_display": format_number((difference)),
+        "percent_change": round(percent_change, 2),      
+               
+         }
     
     return render(request, 'analytics.html', context)
 
@@ -207,9 +232,9 @@ def monthly_data(request):
 
 
 
-from django.http import JsonResponse
-from django.utils.timezone import now
-from django.db import connection
+
+
+
 
 def refresh_materialized_view(request):
     # Get the current date
@@ -272,5 +297,39 @@ def get_nps_distribution(request):
 
     return JsonResponse({'labels': labels, 'data': data})
 
+from .models import MonthlySurveySummary
+def status_chart(request):
+    # Query data from the materialized view
+    survey_data = MonthlySurveySummary.objects.all()
+
+    # Prepare data for the chart
+    categories = [data.month_year for data in survey_data]
+    total_data = [data.total for data in survey_data]
+    active_data = [data.active for data in survey_data]
+    completed_data = [data.completed for data in survey_data]
+
+    # Return data as JSON
+    return JsonResponse({
+        'categories': categories,
+        'total_data': total_data,
+        'active_data': active_data,
+        'completed_data': completed_data
+    })
 
 
+def regional_nps(request):
+    # Query the materialized view and get the sub_region_name and avg_nps_score
+    data = AvgNpsPerRegion.objects.all()[:10].values('sub_region_name', 'avg_nps_score')
+
+
+    # Format the data into the required format for the chart
+    chart_data = [
+        {
+            'x': entry['sub_region_name'],
+            'y': float(entry['avg_nps_score'])  # Ensure the numeric value is converted to float
+        }
+        for entry in data
+    ]
+
+    # Return the data as a JSON response
+    return JsonResponse({'series': [{'data': chart_data}]})

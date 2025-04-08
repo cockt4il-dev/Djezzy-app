@@ -155,3 +155,26 @@ class NPSResponseSummary(models.Model):
         ordering = ["response_parsed"]  # Ensure order at the Django level
 
 
+
+class MonthlySurveySummary(models.Model):
+    month_year = models.CharField(max_length=7, primary_key=True)  # e.g., "01-2021"
+    total = models.BigIntegerField()  # Use BigIntegerField for larger numbers
+    active = models.BigIntegerField()  # Use BigIntegerField
+    completed = models.BigIntegerField()  # Use BigIntegerField
+    stopped = models.BigIntegerField()  # Use BigIntegerField
+
+    class Meta:
+        managed = False  # Prevent Django from trying to create or modify this table
+        db_table = 'monthly_survey_summary'
+        verbose_name = 'Monthly Survey Summary'
+        verbose_name_plural = 'Monthly Survey Summaries'
+
+
+class AvgNpsPerRegion(models.Model):
+    sub_region_name = models.CharField(max_length=100)  # Corresponds to character varying(100)
+    avg_nps_score = models.DecimalField(max_digits=10, decimal_places=2)  # Corresponds to numeric
+
+    class Meta:
+        managed = False  # This tells Django not to create or modify the table
+        db_table = 'avg_nps_per_region_test'  # The name of the materialized view
+        ordering = ['-avg_nps_score']  # Optional: to order by avg_nps_score DESC by default

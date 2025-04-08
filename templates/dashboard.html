@@ -51,7 +51,7 @@
         <div class="row mt-3">
             <div class="col-md-12">
                 <div class="card p-3">
-                    <canvas id="chLine" ></canvas>
+                    <div id="chLine" ></div>
                 </div>
             </div>
         </div>
@@ -76,19 +76,15 @@
         </div>
         </div>
         <div class="row mt-3">
-            <div class="col-md-4">
+            <div class="col-md-8">
                 <div class="card p-3">
-                    <canvas id="chDonut2" style="height: 100vh; !important"></canvas>
+                    <div id="chDonut2" style="height: 400px;"></div>
                 </div>
             </div>
+            
             <div class="col-md-4">
                 <div class="card p-3">
-                    <canvas id="chDonut3" style="height: 100vh; !important"></canvas>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card p-3">
-                    <canvas id="chDonut4"></canvas>
+                    <canvas id="surveyPieChart"></canvas>
                 </div>
             </div>
         </div>
@@ -108,12 +104,12 @@
         <div class="row mt-3">
           <div class="col-md-12">
               <div class="card p-3">
-                  <canvas id=""></canvas>
+                  <div id="multi_y_axis"></div>
               </div>
           </div>
       </div>
     </div>
-    
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
     <script>
@@ -142,18 +138,7 @@ var globalChartOptions = {
 
 
 
-const charcolor = [
-    "rgba(52, 152, 219, 0.9)",  // Blue
-    "rgba(46, 204, 113, 0.9)",  // Green
-    "rgba(241, 196, 15, 0.9)",  // Yellow
-    "rgba(231, 76, 60, 0.9)",   // Red
-    "rgba(155, 89, 182, 0.9)",  // Purple
-    "rgba(26, 188, 156, 0.9)",  // Teal
-    "rgba(230, 126, 34, 0.9)",  // Orange
-    "rgba(52, 73, 94, 0.9)",    // Dark Blue-Grey
-    "rgba(253, 121, 168, 0.9)", // Pink
-    "rgba(243, 156, 18, 0.9)"   // Deep Orange
-];
+
 
 //var colors = ['#E84D5B','#BBBBBB','#333333','#c3e6cb','#dc3545','#6c757d'];
 
@@ -167,88 +152,93 @@ var chLine = document.getElementById("chLine");
 
 // Function to fetch data from Django API
 async function fetchChartData() {
-    try {
-        let response = await fetch('/api/monthly-data/');
-        let data = await response.json();
+        try {
+            let response = await fetch('/api/monthly-data/');
+            let data = await response.json();
 
-        let chartData = {
-            labels: data.labels,
-            datasets: [{
-                label: "Responses",
-                data: data.data,
-                backgroundColor: 'transparent',
-                borderColor: '#E53935',
-                borderWidth: 3,
-                pointBackgroundColor: '#E53935',
-                pointRadius: 5,
-                pointHoverRadius: 7,
-            }]
-        };
+            // Convert labels and data to ApexCharts format
+            let seriesData = data.labels.map((label, index) => ({
+                x: new Date(label + "-01"), // Add day to create valid date
+                y: data.data[index]
+            }));
 
-        if (chLine) {
-            new Chart(chLine, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: 10
+            let options = {
+                chart: {
+                    type: 'line',
+                    height: 400,
+                    zoom: {
+                        enabled: true,
+                        type: 'x',
+                        autoScaleYaxis: true
                     },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: "#444",
-                                font: { size: 12, weight: "bold" }
-                            },
-                            grid: {
-                                color: "rgba(0, 0, 0, 0.1)"
-                            },
-                            title: {
-                                display: true,
-                                text: "Months",
-                                font: { size: 14, weight: "bold" }
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                color: "#444",
-                                font: { size: 12, weight: "bold" },
-                                beginAtZero: true
-                            },
-                            grid: {
-                                color: "rgba(0, 0, 0, 0.1)"
-                            },
-                            title: {
-                                display: true,
-                                text: "Number of Responses",
-                                font: { size: 14, weight: "bold" }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: {
-                                color: "#333",
-                                font: { size: 14, weight: "bold" }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: "rgba(0,0,0,0.8)",
-                            titleFont: { size: 14, weight: "bold" },
-                            bodyFont: { size: 12 }
+                    toolbar: {
+                        autoSelected: 'zoom',
+                        tools: {
+                            pan: true,
+                            reset: true
                         }
                     }
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Error loading chart data:", error);
-    }
-}
+                },
+                series: [{
+                    name: "Responses",
+                    data: seriesData
+                }],
+                xaxis: {
+                    type: 'datetime',
+                    title: {
+                        text: 'Months'
+                    },
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 700
+                        },
+                        formatter: function (val) {
+                            return new Date(val).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short'
+                            });
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Number of Responses'
+                    },
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                stroke: {
+                    curve: 'straight',
+                    width: 3
+                },
+                markers: {
+                    size: 5
+                },
+                tooltip: {
+                    x: {
+                        format: 'MMM yyyy'
+                    }
+                },
+                title: {
+          text: 'Monthly responses'
+        },
+                colors: ['#E53935']
+            };
 
-fetchChartData();
+            var chart = new ApexCharts(document.querySelector("#chLine"), options);
+            chart.render();
+
+        } catch (error) {
+            console.error("Error loading chart data:", error);
+        }
+    }
+
+    fetchChartData();
 
 
 
@@ -263,7 +253,7 @@ $(document).ready(function () {
                 label: 'Survey Type Count',
                 data: [],
                 backgroundColor: charcolor,
-
+                
                 borderWidth: 0
             }]
         },
@@ -787,6 +777,215 @@ function convertMonthYearToDate(monthYear) {
 
     fetchData();
 });
+
+
+
+fetch('/api/status-chart/')
+            .then(response => response.json())
+            .then(data => {
+                // Chart options using the fetched data
+                var options = {
+                    series: [{
+                        name: 'Total',
+                        type: 'column',
+                        data: data.total_data
+                    }, {
+                        name: 'Completed',
+                        type: 'column',
+                        data: data.completed_data
+                    }, {
+                        name: 'Active',
+                        type: 'line',
+                        data: data.active_data
+                    }],
+                    chart: {
+                        height: 350,
+                        type: 'line',
+                        stacked: false
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        width: [1, 1, 4]
+                    },
+                    title: {
+                        text: 'Survey Summary',
+                        align: 'left',
+                        offsetX: 110
+                    },
+                    xaxis: {
+                        categories: data.categories
+                    },
+                    yaxis: [{
+                        seriesName: 'Total',
+                        axisTicks: {
+                            show: true,
+                        },
+                        axisBorder: {
+                            show: true,
+                            color: '#008FFB'
+                        },
+                        labels: {
+                            style: {
+                                colors: '#008FFB',
+                            }
+                        },
+                        title: {
+                            text: "Total Surveys",
+                            style: {
+                                color: '#008FFB',
+                            }
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }, {
+                        seriesName: 'Completed',
+                        opposite: true,
+                        axisTicks: {
+                            show: true,
+                        },
+                        axisBorder: {
+                            show: true,
+                            color: '#00E396'
+                        },
+                        labels: {
+                            style: {
+                                colors: '#00E396',
+                            }
+                        },
+                        title: {
+                            text: "Completed Surveys",
+                            style: {
+                                color: '#00E396',
+                            }
+                        },
+                    }, {
+                        seriesName: 'Active',
+                        opposite: true,
+                        axisTicks: {
+                            show: true,
+                        },
+                        axisBorder: {
+                            show: true,
+                            color: '#FEB019'
+                        },
+                        labels: {
+                            style: {
+                                colors: '#FEB019',
+                            },
+                        },
+                        title: {
+                            text: "Active Surveys",
+                            style: {
+                                color: '#FEB019',
+                            }
+                        }
+                    }],
+                    tooltip: {
+                        fixed: {
+                            enabled: true,
+                            position: 'topLeft',
+                            offsetY: 30,
+                            offsetX: 60
+                        },
+                    },
+                    legend: {
+                        horizontalAlign: 'left',
+                        offsetX: 40
+                    }
+                };
+
+                var chart = new ApexCharts(document.querySelector("#multi_y_axis"), options);
+                chart.render();
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+
+// Function to scale the data with a smoother approach
+function scaleData(data) {
+    const minValue = Math.min(...data.map(entry => entry.y));
+    const maxValue = Math.max(...data.map(entry => entry.y));
+    const scaleFactor = 100;  // Scale factor for adjustment
+
+    // Adding a small constant to avoid too much compression at the low end
+    const buffer = 0.05;
+
+    // Apply linear scaling with buffer
+    return data.map(entry => ({
+        x: entry.x,
+        y: Math.max(
+            (entry.y - minValue + buffer) * scaleFactor / (maxValue - minValue + buffer),
+            0.5  // Set a lower bound for the smallest values to avoid them being too tiny
+        )
+    }));
+}
+
+function scaleData(data) {
+    const minValue = Math.min(...data.map(entry => entry.y));
+    const maxValue = Math.max(...data.map(entry => entry.y));
+    const scaleFactor = 100;
+    const buffer = 0.05;
+
+    return data.map(entry => ({
+        x: entry.x,
+        y: Math.max(
+            (entry.y - minValue + buffer) * scaleFactor / (maxValue - minValue + buffer),
+            0.5
+        ),
+        originalY: entry.y  // store original value safely
+    }));
+}
+
+let scaledData = [];
+
+const options = {
+    series: [
+        {
+            data: [] // populated after fetch
+        }
+    ],
+    legend: {
+        show: false
+    },
+    chart: {
+        height: 350,
+        type: 'treemap'
+    },
+    title: {
+        text: 'Regional NPS Treemap'
+    },
+    tooltip: {
+        y: {
+            formatter: function (_, { dataPointIndex }) {
+                // show the original unscaled NPS score
+                const original = scaledData[dataPointIndex]?.originalY;
+                return original !== undefined ? original.toFixed(2) : '';
+            }
+        }
+    }
+};
+
+// Fetch the data from your Django endpoint
+fetch('/api/regional-nps/')
+    .then(response => response.json())
+    .then(data => {
+        // Save scaled data globally so tooltip can access it
+        scaledData = scaleData(data.series[0].data);
+
+        // Assign scaled data without losing access to original
+        options.series[0].data = scaledData.map(d => ({
+            x: d.x,
+            y: d.y
+        }));
+
+        const chart = new ApexCharts(document.querySelector("#chDonut2"), options);
+        chart.render();
+    })
+    .catch(error => console.error('Error fetching data:', error));
 
 
 
