@@ -38,7 +38,7 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="card p-3">
-                    <canvas id="chpp"></canvas>
+                    <div id="chpp" style="height: 400px;"></div>
                 </div>
             </div>
             <div class="col-md-6">
@@ -109,7 +109,7 @@
           </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
     <script>
@@ -152,93 +152,103 @@ var chLine = document.getElementById("chLine");
 
 // Function to fetch data from Django API
 async function fetchChartData() {
-        try {
-            let response = await fetch('/api/monthly-data/');
-            let data = await response.json();
+    try {
+        let response = await fetch('/api/daily-data/');
+        let data = await response.json();
 
-            // Convert labels and data to ApexCharts format
-            let seriesData = data.labels.map((label, index) => ({
-                x: new Date(label + "-01"), // Add day to create valid date
-                y: data.data[index]
-            }));
+        
 
-            let options = {
-                chart: {
-                    type: 'line',
-                    height: 400,
-                    zoom: {
-                        enabled: true,
-                        type: 'x',
-                        autoScaleYaxis: true
-                    },
-                    toolbar: {
-                        autoSelected: 'zoom',
-                        tools: {
-                            pan: true,
-                            reset: true
-                        }
+        // Convert labels and data to ApexCharts format
+        let seriesData = data.labels.map((label, index) => ({
+            x: new Date(label),  // Already a valid "YYYY-MM-DD" format
+            y: data.data[index]
+        }));
+
+        let allTimestamps = seriesData.map(point => point.x.getTime());
+        let max = Math.max(...allTimestamps);
+        let min = max - ( 200 * 24 * 60 * 60 * 1000); // 30 days in milliseconds
+
+        let options = {
+            chart: {
+                type: 'line',
+                height: 400,
+                zoom: {
+                    enabled: true,
+                    type: 'x',
+                    autoScaleYaxis: true
+                },
+                toolbar: {
+                    autoSelected: 'zoom',
+                    tools: {
+                        pan: true,
+                        reset: true
                     }
-                },
-                series: [{
-                    name: "Responses",
-                    data: seriesData
-                }],
-                xaxis: {
-                    type: 'datetime',
-                    title: {
-                        text: 'Months'
-                    },
-                    labels: {
-                        style: {
-                            fontSize: '12px',
-                            fontWeight: 700
-                        },
-                        formatter: function (val) {
-                            return new Date(val).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short'
-                            });
-                        }
-                    }
-                },
-                yaxis: {
-                    title: {
-                        text: 'Number of Responses'
-                    },
-                    labels: {
-                        style: {
-                            fontSize: '12px',
-                            fontWeight: 700
-                        }
-                    }
-                },
-                stroke: {
-                    curve: 'straight',
-                    width: 3
-                },
-                markers: {
-                    size: 5
-                },
-                tooltip: {
-                    x: {
-                        format: 'MMM yyyy'
-                    }
-                },
+                }
+            },
+            series: [{
+                name: "Responses",
+                data: seriesData
+            }],
+            xaxis: {
+                type: 'datetime',
                 title: {
-          text: 'Monthly responses'
-        },
-                colors: ['#E53935']
-            };
+                    text: 'Date'
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 700
+                    },
+                    formatter: function (val) {
+                        return new Date(val).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    }
+                },
+                min: min,
+                max: max,
+            },
+            yaxis: {
+                title: {
+                    text: 'Number of Responses'
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 700
+                    }
+                }
+            },
+            stroke: {
+                curve: 'straight',
+                width: 2
+            },
+            markers: {
+                size: 0
+            },
+            tooltip: {
+                x: {
+                    format: 'dd MMM yyyy'
+                }
+            },
+            title: {
+                text: 'Daily Responses'
+            },
+            colors: ['#E53935']
+        };
 
-            var chart = new ApexCharts(document.querySelector("#chLine"), options);
-            chart.render();
+        var chart = new ApexCharts(document.querySelector("#chLine"), options);
+        chart.render();
 
-        } catch (error) {
-            console.error("Error loading chart data:", error);
-        }
+    } catch (error) {
+        console.error("Error loading chart data:", error);
     }
+}
 
-    fetchChartData();
+fetchChartData();
+
 
 
 
@@ -273,7 +283,7 @@ $(document).ready(function () {
                 },
                 title: {
                     display: true,
-                    text: 'Survey Types',
+                    text: 'Questions by survey type',
                     font: { size: 16, weight: "bold" }
                 },
                 tooltip: {
@@ -364,7 +374,7 @@ $(document).ready(function() {
                 },
                 title: {
                     display: true,
-                    text: 'Question Types',
+                    text: 'Questions by language',
                     font: {
                         size: 16,
                         weight: 'bold'
@@ -421,85 +431,92 @@ $(document).ready(function() {
 
 
 /* bar chart */
-var chpp = document.getElementById("chpp");
-
-if (chpp) {
-  fetch("/api/nps-overview-data/")  // Ensure this matches your Django URL
+fetch("/api/nps-overview-data/")
     .then(response => response.json())
     .then(data => {
-      new Chart(chpp, {
-        type: 'doughnut',
-        data: {
-          labels: data.labels, // ['Promoters', 'Passives', 'Detractors']
-          datasets: [
-            {
-              label: "Number of Responses",
-              data: data.counts, // Counts from API
-              backgroundColor: ["#2ECC71", "#F1C40F", "#E74C3C"], // Green, Yellow, Red
-              borderRadius: 5
-            }
-          ]
+      var options = {
+        series: data.counts, // [Promoters, Passives, Detractors]
+        chart: {
+          type: 'donut',
+          height: 400
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '70%', // More space for text
-          plugins: {
+        labels: data.labels, // ['Promoters', 'Passives', 'Detractors']
+        colors: ["#2ECC71", "#F1C40F", "#E74C3C"],
+        responsive: [{
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 250
+            },
             legend: {
-              position: 'right',
+              show: false,
+              position: 'bottom'
+            }
+          }
+        }],
+        legend: {
+          position: 'right',
+          fontSize: '14px',
+          markers: {
+            width: 10,
+            height: 10
+          }
+        },
+        tooltip: {
+  y: {
+    formatter: function (value, { seriesIndex }) {
+      let percentage = data.percentages[seriesIndex];
+      let percentFormatted = (!isNaN(percentage))
+        ? parseFloat(percentage).toFixed(1) + '%'
+        : percentage;
+      return `${value} (${percentFormatted})`;
+    }
+  }
+}
+
+,
+        title: {
+          text: 'NPS Summary',
+          align: 'center',
+          style: {
+            fontSize: '18px',
+            fontWeight: 'bold'
+          }
+        },
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '70%',
               labels: {
-                usePointStyle: true,
-                padding: 15,
-                font: { size: 12 }
-              }
-            },
-            title: {
-              display: true,
-              text: 'Nps Summary',
-              font: {
-                size: 16,
-                weight: 'bold'
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const label = context.label || '';
-                  const value = context.formattedValue;
-                  const percentage = parseFloat(data.percentages[context.dataIndex]).toFixed(1) + '%';
-                  return `${label}: ${value} (${percentage})`;
+                show: true,
+                name: {
+                  show: true,
+                  fontSize: '14px'
+                },
+                value: {
+                  show: true,
+                  fontSize: '14px',
+                  color: '#333',
+                },
+                total: {
+                  show: true,
+                  label: 'NPS Score',
+                  fontSize: '16px',
+                  color: '#333',
+                  formatter: function (w) {
+                    return data.nps_score;
+                  }
                 }
               }
             }
           }
-        },
-        plugins: [{
-          id: 'customTextPlugin',
-          beforeDraw: (chart) => {
-            let width = chart.width,
-                height = chart.height,
-                ctx = chart.ctx;
+        }
+      };
 
-            ctx.restore();
-            
-            let fontSize = Math.min(width, height) / 20; // Adjust font size dynamically
-            ctx.font = `${fontSize}px Arial`;
-            ctx.fillStyle = "#333"; // Dark text color
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle"; 
-
-            let text = `NPS Score: ${data.nps_score}`; // Use dynamic NPS score
-            let textX = width / 2.4;
-            let textY = height / 1.9;
-
-            ctx.fillText(text, textX, textY);
-            ctx.save();
-          }
-        }]
-      });
+      var chart = new ApexCharts(document.querySelector("#chpp"), options);
+      chart.render();
     })
     .catch(error => console.error("Error loading chart data:", error));
-}
 
 
 

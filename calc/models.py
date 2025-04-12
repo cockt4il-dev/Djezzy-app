@@ -34,6 +34,15 @@ class NPSResponses(models.Model):
     response_parsed = models.TextField()
 
 
+class ReportReason(models.Model):
+    username = models.TextField()
+    type = models.TextField()
+    code = models.IntegerField()
+    regexp_replace = models.TextField(null=True, blank=True)
+    survey_dttm = models.TextField()
+    msisdn = models.TextField()
+
+
 
 from django.db import models
 
@@ -131,6 +140,15 @@ class MonthlyResponseCounts(models.Model):
     class Meta:
         managed = False  
         db_table = "monthly_response_counts"  # Matches the SQL view name
+
+
+class DailyResponseCounts(models.Model):
+    response_date = models.DateField(primary_key=True)
+    count = models.IntegerField()
+
+    class Meta:
+        managed = False  # Important: This tells Django not to try to manage this materialized view (e.g. no migrations)
+        db_table = 'daily_response_counts'
 
 
 

@@ -1,12 +1,12 @@
-from django.shortcuts import render,redirect #N
+from django.shortcuts import render,redirect 
 from django.http import HttpResponse 
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from django.contrib.auth import authenticate, login #N
-from django.contrib import messages #N
-from .models import NPSQuestions, NPSResponses, MonthlyResponseCounts, AvgNpsPerRegion  # Import your model
-from django.db.models import Count  # Import Count for aggregation
+from django.contrib.auth import authenticate, login 
+from django.contrib import messages 
+from .models import NPSQuestions, NPSResponses, MonthlyResponseCounts,DailyResponseCounts, AvgNpsPerRegion  
+from django.db.models import Count  
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django.views.decorators.csrf import csrf_exempt
@@ -26,7 +26,7 @@ def home_redirect(request):
         return redirect("dashboard")  
     return redirect("login")  
 
-# Create your views here.
+
 def dashboard(request):
     
     return render(request, 'dashboard.html')
@@ -54,7 +54,7 @@ def login_view(request):
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
-    return render(request, 'login.html')  # Render HTML login form
+    return render(request, 'login.html')  
 
 
 
@@ -75,7 +75,7 @@ def signup_view(request):
 
         return JsonResponse({'message': 'User registered successfully'}, status=201)
 
-    return render(request, 'signup.html')  # Render HTML signup form for GET requests
+    return render(request, 'signup.html')  
 
 
 @csrf_exempt
@@ -96,7 +96,7 @@ def get_chart_data(request):
             .annotate(count=Count('survey_type'))
         )
 
-        labels = [entry['survey_type__survey_name'] for entry in data]  # Get survey names
+        labels = [entry['survey_type__survey_name'] for entry in data]  
         counts = [entry['count'] for entry in data]
 
         return JsonResponse({'labels': labels, 'data': counts})
@@ -112,31 +112,45 @@ def get_lang_chart_data(request):
             .annotate(count=Count('lang_id'))
         )
 
-        labels = [entry['lang_id'] for entry in data]  # Get survey names
+        labels = [entry['lang_id'] for entry in data]  
         counts = [entry['count'] for entry in data]
 
         return JsonResponse({'labels': labels, 'data': counts})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
+def get_type_chart_data(request):
+    try:
+        data = (
+            NPSQuestions.objects.values('question_type')
+            .annotate(count=Count('question_type'))
+            .exclude(question_type=' ')  # Exclude the empty string label
+        )
+
+        labels = [entry['question_type'] for entry in data]
+        counts = [entry['count'] for entry in data]
+
+        return JsonResponse({'labels': labels, 'data': counts})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
     
 def questions(request):
-    all_data = NPSQuestions.objects.all().order_by('id')  # Ensure ordering
-    paginator = Paginator(all_data, 6)  # Show 10 items per page
+    all_data = NPSQuestions.objects.all().order_by('id')  
+    paginator = Paginator(all_data, 6)  
 
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     total_questions = NPSQuestions.objects.count()
     
 
-    # Fetch unique lang_id values from the database
+    
     unique_lang_ids = NPSQuestions.objects.values_list('lang_id', flat=True).distinct()
     unique_question_types = NPSQuestions.objects.values_list('question_type', flat=True).distinct()
 
     context = {
         'page_obj': page_obj,
-        'total_questions': total_questions,  # Pass total surveys to template
+        'total_questions': total_questions,  
         'lang_ids': unique_lang_ids,
         'question_types' : unique_question_types,
     }
@@ -153,14 +167,14 @@ def filtered_data(request):
     lang_id = request.GET.get('lang_id', '')
     question_type = request.GET.get('question_type', '')
 
-    # Filter the database based on selected values
+    
     queryset = NPSQuestions.objects.all()
     if lang_id:
         queryset = queryset.filter(lang_id=lang_id)
     if question_type:
         queryset = queryset.filter(question_type=question_type)
 
-    # Convert queryset to JSON response
+    
     data = list(queryset.values('id', 'survey_type_id', 'lang_id', 'question_number', 'regexp_replace', 'question_name', 'question_type'))
     return JsonResponse({"data": data})
 
@@ -170,7 +184,7 @@ def search_data(request):
     # Search in the "regexp_replace" column
     queryset = NPSQuestions.objects.filter(regexp_replace__icontains=query) if query else NPSQuestions.objects.all()
 
-    # Convert queryset to JSON
+    
     data = list(queryset.values('id', 'survey_type_id', 'lang_id', 'question_number', 'regexp_replace', 'question_name', 'question_type'))
     return JsonResponse({"data": data})
 
@@ -233,11 +247,18 @@ def monthly_data(request):
 
 
 
+def daily_data(request):
+    data = DailyResponseCounts.objects.all().order_by("response_date")
+    labels = [entry.response_date for entry in data]  # No .strftime()
+    counts = [entry.count for entry in data]
+
+    return JsonResponse({"labels": labels, "data": counts})
+
 
 
 
 def refresh_materialized_view(request):
-    # Get the current date
+    
     current_date = now().date()
 
     # Check if it's the first day of the month
@@ -269,7 +290,7 @@ def get_nps_overview_data(request):
         cursor.execute("SELECT label, percentage, count FROM nps_overview;")
         rows = cursor.fetchall()
 
-    # Extract data
+    
     labels = [row[0] for row in rows]  # 'Promoters', 'Passives', 'Detractors'
     percentages = {row[0]: row[1] for row in rows}  # {'Promoters': xx, 'Passives': yy, 'Detractors': zz}
     counts = {row[0]: row[2] for row in rows}  # {'Promoters': xx, 'Passives': yy, 'Detractors': zz}
@@ -281,7 +302,7 @@ def get_nps_overview_data(request):
         "labels": labels,
         "percentages": list(percentages.values()),
         "counts": list(counts.values()),
-        "nps_score": nps_score  # Include NPS Score in API response
+        "nps_score": nps_score  
     }
 
     return JsonResponse(data)
@@ -292,23 +313,23 @@ def get_nps_distribution(request):
         rows = cursor.fetchall()
 
     # Extract data for Chart.js
-    labels = [str(row[0]) for row in rows]  # response_parsed (1,2,3,...,10)
-    data = [row[1] for row in rows]         # response_count (values)
+    labels = [str(row[0]) for row in rows]  
+    data = [row[1] for row in rows]         
 
     return JsonResponse({'labels': labels, 'data': data})
 
 from .models import MonthlySurveySummary
 def status_chart(request):
-    # Query data from the materialized view
+    
     survey_data = MonthlySurveySummary.objects.all()
 
-    # Prepare data for the chart
+    
     categories = [data.month_year for data in survey_data]
     total_data = [data.total for data in survey_data]
     active_data = [data.active for data in survey_data]
     completed_data = [data.completed for data in survey_data]
 
-    # Return data as JSON
+    
     return JsonResponse({
         'categories': categories,
         'total_data': total_data,
@@ -318,18 +339,15 @@ def status_chart(request):
 
 
 def regional_nps(request):
-    # Query the materialized view and get the sub_region_name and avg_nps_score
+
     data = AvgNpsPerRegion.objects.all()[:10].values('sub_region_name', 'avg_nps_score')
 
-
-    # Format the data into the required format for the chart
     chart_data = [
         {
             'x': entry['sub_region_name'],
-            'y': float(entry['avg_nps_score'])  # Ensure the numeric value is converted to float
+            'y': float(entry['avg_nps_score'])  
         }
         for entry in data
     ]
 
-    # Return the data as a JSON response
     return JsonResponse({'series': [{'data': chart_data}]})

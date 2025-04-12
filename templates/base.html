@@ -259,6 +259,8 @@ canvas {
 
 {% endblock %}
 
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let sidebar = document.querySelector('.sidebar');
@@ -289,6 +291,19 @@ function toggleSidebar() {
         if (mainContent) mainContent.style.marginLeft = "var(--sidebar-width)";
     }
 }
+
+window.addEventListener('resize', function() {
+    let sidebar = document.querySelector('.sidebar');
+    let mainContent = document.querySelector('.main-content');
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        sidebar.classList.add('collapsed');
+        sessionStorage.setItem('sidebarState', 'collapsed');
+        if (mainContent) mainContent.style.marginLeft = "var(--sidebar-width-collapsed)";
+    }
+});
+
 
 function logoutUser() {
     fetch("{% url 'logout' %}", {
@@ -331,6 +346,9 @@ const charcolor = [
     "rgba(253, 121, 168, 0.9)", // Pink
     "rgba(243, 156, 18, 0.9)"   // Deep Orange
 ];
+
+
+
 
 
 </script>

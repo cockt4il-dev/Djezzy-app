@@ -2,6 +2,8 @@
 
 
 {% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
 
 .canv{
@@ -26,7 +28,7 @@
         <!-- Row 1 -->
         <div class="row g-3">
           <!-- Conversions -->
-          <div class="col-md-3 canv">
+          <div class="col-md-2 canv">
             <div class="card h-100 p-3">
               <h6>Conversions</h6>
               <h2>2,094</h2>
@@ -51,11 +53,11 @@
           </div>
       
           <!-- Conversion by event type -->
-          <div class="col-md-3">
+          <div class="col-md-4">
             <div class="card h-100 p-3">
               <h6>Conversion by event type</h6>
               <!-- Placeholder for chart -->
-              <div class="chart-placeholder" style="height:200px; background-color: #f1f1f1;"></div>
+              <div class="chart-placeholder" style="height:200px; background-color: #f1f1f1; min-width: 400px;"></div>
             </div>
           </div>
         </div>
@@ -63,7 +65,7 @@
         <!-- Row 2 -->
         <div class="row g-3 mt-1">
           <!-- Users -->
-          <div class="col-md-3">
+          <div class="col-md-2">
             <div class="card h-100 p-3">
               <h6>Total responses</h6>
               <h2>{{total_responses}}</h2>
@@ -96,12 +98,14 @@
             <div class="card h-100 p-3">
               <h6>28 day trend</h6>
               <!-- Placeholder for chart -->
-              <div class="chart-placeholder" style="height:200px; background-color: #f1f1f1;"></div>
+              <div id="chart-placeholder" style="height:200px;">
+
+              </div>
             </div>
           </div>
       
           <!-- Conversion rate and Engagement rate -->
-          <div class="col-md-3">
+          <div class="col-md-4">
             <div class="row g-3">
               <div class="col-12">
                 <div class="card p-3">
@@ -181,6 +185,43 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }, 50); // slight delay ensures all layout and styles settle
 });
+
+
+
+
+
+
+
+
+var options = {
+          series: [{
+          data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380]
+        }],
+          chart: {
+          type: 'bar',
+          height: 350
+        },
+        plotOptions: {
+          bar: {
+            
+            borderRadius: 4,
+            borderRadiusApplication: 'end',
+            horizontal: true,
+          },
+          
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: ['South Korea', 'Canada', 'United Kingdom', 'Netherlands', 'Italy', 'France', 'Japan',
+            'United States', 'China', 'Germany'
+          ],
+        }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart-placeholder"), options);
+        chart.render();
 
 </script>
 

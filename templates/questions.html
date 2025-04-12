@@ -245,9 +245,27 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     display: none;
 }
 
+.progress-new-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);  /* Slightly transparent black */
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.5;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    z-index: 10;
+    display: none;
+}
+
 .custom-legend {
     display: flex;
+    flex-wrap: wrap; /* Allow items to wrap */
     justify-content: center;
+    gap: 8px 16px; /* Space between items */
     margin-top: 10px;
     padding-top: 20px;
 }
@@ -376,8 +394,8 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
             </div>
             <div class="card-8 small-card">
                 <div class="card-title">
-                    <h4><strong>Total questions</strong></h4>
-                    <h5>{{ total_questions }}</h5>
+                    <h4><strong>Questions by language</strong></h4>
+                    
                 </div>
                 <div class="progress-container">
                     <div class="progress-circle third"></div>
@@ -396,22 +414,37 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
             </div>
             <div class="card-8 small-card">
                 <div class="card-title">
-                    <h4><strong>Total questions</strong></h4>
-                    <h5>{{ total_questions }}</h5>
+                    <h4><strong>Questions by type</strong></h4>
+                    
                 </div>
                 <div class="progress-container">
-                    <div class="progress-circle third"></div>
-                    <div class="progress-circle second"></div>
-                    <div class="progress-circle first"></div>
-                    <div class="progress-tooltip">28%</div>
+                    <!-- Progress Circles -->
+                    <div class="progress-circle new-circle-1"></div>
+                    <div class="progress-circle new-circle-2"></div>
+                    <div class="progress-circle new-circle-3"></div>
+                    <div class="progress-circle new-circle-4"></div>
+                    <div class="progress-circle new-circle-5"></div>
+                    <div class="progress-circle new-circle-6"></div>
+                    <div class="progress-circle new-circle-7"></div>
+                    <!-- Add more as needed based on the data length -->
+                    
+                    <!-- Tooltip -->
+                    <div class="progress-new-tooltip">28%</div>
+                    
+                    <!-- Optional Icon -->
                     <div class="progress-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-chart-pie"></i>
                     </div>
                 </div>
+            
                 <div class="custom-legend">
-                    <span class="legend-item"><span class="legend-color" style="background-color: #EF233C;"></span> FRE</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: #8D99AE;"></span> ARD</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: #EDF2F4;"></span> ARA</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #a4161a;"></span> CLOSURE</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #ba181b;"></span> YES_NO</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #e5383b;"></span> INTRO</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #8D99AE;"></span> COMMENT</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #B3BBC9;"></span> QCM</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #EDF2F4;"></span> SCALE</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #ffffff;"></span> EXPIRATION</span>
                 </div>
             </div>
         </div>
@@ -420,6 +453,83 @@ box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+
+
+
+$(document).ready(function () {
+    function fetchAndCalculate() {
+        $.getJSON("/api/type-chart-data/", function (response) {
+            let total = response.data.reduce((acc, val) => acc + val, 0);
+            let percentages = response.data.map(value => value / total);
+
+            // Create the data dynamically based on the response
+            let data = response.labels.map((label, index) => ({
+                value: percentages[index],
+                color: getColorForIndex(index),  // Function to dynamically assign colors
+                label: label
+            }));
+
+            // Function to return colors based on the index
+            function getColorForIndex(index) {
+                const colors = [
+
+"#ffffff",
+"#a4161a",
+"#ba181b",
+"#e5383b",
+"#8D99AE",
+"#B3BBC9",
+"#EDF2F4",];
+                return colors[index % colors.length];  // Reuse colors if there are more than available
+            }
+
+            function createCircle(selector, value, color, startOffset, label) {
+                let $circle = $(selector);
+
+                $circle.circleProgress({
+                    value: value,
+                    size: 150,
+                    thickness: 8,
+                    emptyFill: "rgba(0,0,0,0)",
+                    startAngle: (-Math.PI / 2) + (2 * Math.PI * startOffset),
+                    lineCap: "round",
+                    fill: { color: color }
+                }).on("circle-animation-progress", function () {
+                    let tooltipText = `
+                        <span style="color: ${color}; font-size: 16px;">●</span> <strong>${Math.round(value * 100)}%</strong> - ${label} <br>
+                    `;
+                    $(".progress-new-tooltip").html(tooltipText);
+                });
+
+                $circle.parent().hover(
+                    function () { $(".progress-new-tooltip").fadeIn(); },
+                    function () { $(".progress-new-tooltip").fadeOut(); }
+                );
+            }
+
+            // Create circles dynamically based on the data
+            let offset = 0;  // Offset to determine where the next circle should start
+            data.forEach((item, index) => {
+                let selector = `.progress-circle.new-circle-${index + 1}`;
+                createCircle(selector, item.value, item.color, offset, item.label);
+                offset += item.value;  // Update the offset for the next circle based on current segment value
+            });
+        });
+    }
+
+    fetchAndCalculate();
+});
+
+
+
+
+
+
+
+
+
+
+
         const ctx = document.getElementById("multiSegmentProgress").getContext("2d");
     
         new Chart(ctx, {
@@ -786,7 +896,7 @@ $(document).ready(function () {
                 y: {
                     title: { 
                         display: true, 
-                        text: "Response Count", 
+                        text: "Questions Count", 
                         font: { size: 14, weight: "bold" } 
                     },
                     beginAtZero: true,
